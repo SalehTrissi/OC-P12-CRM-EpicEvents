@@ -1,4 +1,6 @@
-from utils.validators import validate_email, validate_string_length, validate_phone_number
+from utils.validators import (
+    validate_email, validate_string_length, validate_phone_number
+)
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
@@ -44,7 +46,8 @@ class Client(Base):
         return validate_phone_number(number)
 
     def __repr__(self):
-        return f"<Client {self.client_id}: {self.full_name} from {self.company_name}>"
+        return (f"<Employee {self.employee_id}: {self.first_name} "
+                f"{self.last_name} ({self.department.value})>")
 
 
 # Mise à jour automatique de last_contact_date

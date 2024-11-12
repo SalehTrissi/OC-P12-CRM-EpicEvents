@@ -1,7 +1,9 @@
+from ..utils.validators import (
+    validate_email, validate_phone_number, validate_string_length
+)
 from sqlalchemy import Column, String, Integer, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
-from ..utils.validators import validate_email, validate_phone_number, validate_string_length
 import enum
 
 
@@ -43,4 +45,5 @@ class Employee(Base):
         return validate_phone_number(number)
 
     def __repr__(self):
-        return f"<Employee {self.employee_id}: {self.first_name} {self.last_name} ({self.department.value})>"
+        return (f"<Employee {self.employee_id}: {self.first_name} "
+                f"{self.last_name} ({self.department.value})>")

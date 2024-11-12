@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, Float, Boolean, DateTime, ForeignKey
+from sqlalchemy import (
+    Column, Integer, Float, Boolean, DateTime, ForeignKey
+)
 from sqlalchemy.ext.declarative import declarative_base
 from utils.validators import validate_positive_amount
 from sqlalchemy.orm import relationship, validates
@@ -43,4 +45,5 @@ class Contract(Base):
 
     def __repr__(self):
         status = "Signed" if self.is_signed else "Unsigned"
-        return f"<Contract {self.contract_id}: {status}, Total: {self.total_amount}, Remaining:{self.remaining_amount}>"
+        return (f"<Contract {self.contract_id}: {status}, "
+                f"Total: {self.total_amount}, Remaining:{self.remaining_amount}>")
