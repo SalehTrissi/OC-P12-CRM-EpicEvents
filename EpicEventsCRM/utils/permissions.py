@@ -1,4 +1,3 @@
-# Defining permissions for each role
 ROLE_PERMISSIONS = {
     'Commercial': {
         'create_client', 'update_client', 'modify_contract',
