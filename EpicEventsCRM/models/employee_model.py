@@ -2,12 +2,14 @@ from ..utils.validators import (
     validate_email, validate_phone_number, validate_string_length
 )
 from sqlalchemy import Column, String, Integer, Enum
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
+from argon2 import PasswordHasher
+from .base_model import Base
+import argon2.exceptions
 import enum
 
 
-Base = declarative_base()
+ph = PasswordHasher()
 
 
 class DepartmentEnum(enum.Enum):
@@ -23,6 +25,7 @@ class Employee(Base):
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
     email = Column(String(120), unique=True, nullable=False)
+    password_hash = Column(String(200), nullable=False)
     phone_number = Column(String(20), nullable=False)
     department = Column(Enum(DepartmentEnum), nullable=False)
 
@@ -30,6 +33,16 @@ class Employee(Base):
     clients = relationship('Client', back_populates='sales_contact')
     contracts = relationship('Contract', back_populates='sales_contact')
     events = relationship('Event', back_populates='support_contact')
+
+    # Password management
+    def set_password(self, password):
+        self.password_hash = ph.hash(password)
+
+    def verify_password(self, password):
+        try:
+            return ph.verify(self.password_hash, password)
+        except argon2.exceptions.VerifyMismatchError:
+            return False
 
     # Validation des champs
     @validates('email')

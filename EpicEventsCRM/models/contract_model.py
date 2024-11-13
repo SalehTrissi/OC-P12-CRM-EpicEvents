@@ -1,13 +1,10 @@
 from sqlalchemy import (
     Column, Integer, Float, Boolean, DateTime, ForeignKey
 )
-from sqlalchemy.ext.declarative import declarative_base
 from utils.validators import validate_positive_amount
 from sqlalchemy.orm import relationship, validates
 from datetime import datetime
-
-
-Base = declarative_base()
+from .base_model import Base
 
 
 class Contract(Base):

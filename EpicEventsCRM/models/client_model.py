@@ -2,11 +2,9 @@ from utils.validators import (
     validate_email, validate_string_length, validate_phone_number
 )
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, event
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
 from datetime import datetime
-
-Base = declarative_base()
+from .base_model import Base
 
 
 class Client(Base):
