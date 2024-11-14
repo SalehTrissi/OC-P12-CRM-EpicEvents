@@ -1,7 +1,7 @@
 from sqlalchemy import (
     Column, Integer, String, DateTime, ForeignKey
 )
-from utils.validators import validate_string_length
+from ..utils.validators import validate_string_length
 from sqlalchemy.orm import relationship, validates
 from datetime import datetime
 from .base_model import Base

@@ -1,9 +1,9 @@
 from sqlalchemy import (
     Column, Integer, Float, Boolean, DateTime, ForeignKey
 )
-from utils.validators import validate_positive_amount
+from ..utils.validators import validate_positive_amount
 from sqlalchemy.orm import relationship, validates
-from datetime import datetime
+from datetime import datetime, timezone
 from .base_model import Base
 
 
@@ -13,7 +13,7 @@ class Contract(Base):
     contract_id = Column(Integer, primary_key=True, autoincrement=True)
     total_amount = Column(Float, nullable=False)
     remaining_amount = Column(Float, nullable=False)
-    date_created = Column(DateTime, default=datetime.timezone.utc)
+    date_created = Column(DateTime, default=datetime.now(timezone.utc))
     is_signed = Column(Boolean, default=False)
 
     client_id = Column(Integer, ForeignKey(

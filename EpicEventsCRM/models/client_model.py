@@ -1,9 +1,9 @@
-from utils.validators import (
+from ..utils.validators import (
     validate_email, validate_string_length, validate_phone_number
 )
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, event
 from sqlalchemy.orm import relationship, validates
-from datetime import datetime
+from datetime import datetime, timezone
 from .base_model import Base
 
 
@@ -15,8 +15,8 @@ class Client(Base):
     email = Column(String(120), unique=True, nullable=False)
     phone_number = Column(String(20), nullable=False)
     company_name = Column(String(100), nullable=False)
-    date_created = Column(DateTime, default=datetime.timezone.utc)
-    last_contact_date = Column(DateTime, default=datetime.timezone.utc)
+    date_created = Column(DateTime, default=datetime.now(timezone.utc))
+    last_contact_date = Column(DateTime, default=datetime.now(timezone.utc))
 
     sales_contact_id = Column(Integer, ForeignKey(
         'employees.employee_id'), nullable=False)
@@ -51,4 +51,4 @@ class Client(Base):
 # Mise à jour automatique de last_contact_date
 @event.listens_for(Client, 'before_update')
 def receive_before_update(mapper, connection, target):
-    target.last_contact_date = datetime.timezone.utc
+    target.last_contact_date = datetime.now(timezone.utc)
