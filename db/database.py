@@ -8,9 +8,12 @@ load_dotenv()
 
 # Retrieve the database URL
 DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("The DATABASE_URL environment variable is not defined.")
 
-engine = create_engine(DATABASE_URL, echo=True)
+# Create the SQLAlchemy engine
+engine = create_engine(DATABASE_URL, echo=False)
 
 # Create a session to manage transactions
-session = sessionmaker(bind=engine)
-session = session()
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = SessionLocal()
