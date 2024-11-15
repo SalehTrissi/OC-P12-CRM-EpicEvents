@@ -47,7 +47,7 @@ class Employee(Base):
     # Validation des champs
     @validates('email')
     def validate_email_address(self, key, address):
-        return validate_email(address)
+        return validate_email(address).strip().lower()
 
     @validates('first_name', 'last_name')
     def validate_name_length(self, key, value):

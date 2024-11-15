@@ -18,7 +18,7 @@ def authenticate(session: Session, email: str, password: str):
     Authenticates a user by verifying their credentials.
     Returns a JWT token if authentication is successful.
     """
-    employee = session.query(Employee).filter_by(email=email).first()
+    employee = session.query(Employee).filter_by(email=email.lower()).first()
     if employee and employee.verify_password(password):
         payload = {
             'employee_id': employee.employee_id,
@@ -110,7 +110,7 @@ def login():
     """
     Handles the user login process.
     """
-    email = input("Email: ")
+    email = input("Email: ").strip().lower()
     password = getpass("Password: ")
 
     # Create a session to access the database
