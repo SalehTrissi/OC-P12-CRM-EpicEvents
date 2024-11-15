@@ -1,5 +1,6 @@
 from services.data_access import get_all_clients, get_all_contracts, get_all_events
 from services.employee_service import create_employee, update_employee
+from services.client_service import create_client, update_client
 from auth import login, logout, status
 import argparse
 
@@ -64,6 +65,15 @@ def main():
     parser_update_employee.add_argument(
         'employee_id', type=int, help='ID of the employee to update')
 
+    # create_client command
+    subparsers.add_parser('create_client', help='Create a new client')
+
+    # update_client command
+    parser_update_client = subparsers.add_parser(
+        'update_client', help='Update an client')
+    parser_update_client.add_argument(
+        'client_id', type=int, help='ID of the client to update')
+
     args = parser.parse_args()
 
     if args.command == 'login':
@@ -82,6 +92,10 @@ def main():
         create_employee()
     elif args.command == 'update_employee':
         update_employee(args.employee_id)
+    elif args.command == 'create_client':
+        create_client()
+    elif args.command == 'update_client':
+        update_client(args.client_id)
     else:
         parser.print_help()
 
