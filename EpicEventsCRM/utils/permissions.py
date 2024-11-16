@@ -4,7 +4,7 @@ ROLE_PERMISSIONS = {
         'filter_contracts', 'create_event', 'read_only', 'read_clients', 'read_contracts', 'read_events'
     },
     'Management': {
-        'manage_users', 'create_modify_contract', 'filter_events',
+        'manage_users', 'create_contract', 'modify_contract', 'filter_events',
         'assign_support', 'read_only', 'read_clients', 'read_contracts', 'read_events'
     },
     'Support': {
