@@ -2,6 +2,7 @@ from services.data_access import get_all_clients, get_all_contracts, get_all_eve
 from services.employee_service import create_employee, update_employee
 from services.contract_service import create_contract, update_contract
 from services.client_service import create_client, update_client
+from services.event_service import create_event, update_event
 from auth import login, logout, status
 import argparse
 
@@ -84,6 +85,14 @@ def main():
     parser_update_contract.add_argument(
         'contract_id', type=int, help='ID of the contract to update')
 
+    # create_event command
+    subparsers.add_parser('create_event', help='Create a new event')
+
+    # update_event command
+    parser_update_event = subparsers.add_parser('update_event', help='Update an event')
+    parser_update_event.add_argument(
+        'event_id', type=int, help='ID of the event to update')
+
     args = parser.parse_args()
 
     if args.command == 'login':
@@ -110,6 +119,10 @@ def main():
         create_contract()
     elif args.command == 'update_contract':
         update_contract(args.contract_id)
+    elif args.command == 'create_event':
+        create_event()
+    elif args.command == 'update_event':
+        update_event(args.event_id)
     else:
         parser.print_help()
 
