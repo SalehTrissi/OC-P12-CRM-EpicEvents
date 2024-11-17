@@ -1,39 +1,10 @@
-from services.data_access import get_all_clients, get_all_contracts, get_all_events
+from services.list_services import list_clients, list_contracts, list_events
 from services.employee_service import create_employee, update_employee
 from services.contract_service import create_contract, update_contract
 from services.client_service import create_client, update_client
 from services.event_service import create_event, update_event
 from auth import login, logout, status
 import argparse
-
-
-def list_clients():
-    clients = get_all_clients()
-    if not clients:
-        print("No clients found in the database.")
-    else:
-        for client in clients:
-            print(f"Client ID: {client.client_id}, Name: {
-                  client.full_name}, Email: {client.email}")
-
-
-def list_contracts():
-    contracts = get_all_contracts()
-    if not contracts:
-        print("No contracts found in the database.")
-    else:
-        for contract in contracts:
-            print(f"Contract ID: {contract.contract_id}, Amount: {
-                  contract.amount}, Signed: {contract.signed}")
-
-
-def list_events():
-    events = get_all_events()
-    if not events:
-        print("No events found in the database.")
-    else:
-        for event in events:
-            print(f"Event ID: {event.event_id}, Name: {event.name}, Date: {event.date}")
 
 
 def main():

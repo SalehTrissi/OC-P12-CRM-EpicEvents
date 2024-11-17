@@ -12,49 +12,40 @@ def get_all_clients():
     """
     user = get_current_user()
     if not user:
-        print("You must be authenticated to access clients.")
-        return []
+        raise PermissionError("Authentication required. Please login.")
 
     if not has_permission(user, 'read_clients'):
-        print("You do not have permission to access clients.")
-        return []
+        raise PermissionError("You do not have permission to view clients.")
 
     with SessionLocal as session:
-        clients = session.query(Client).all()
-        return clients
+        return session.query(Client).all()
 
 
 def get_all_contracts():
     """
-    Get all contracts if the user is authenticated and has the necessary permissions.
+    Retrieves all contracts if the user is authenticated and has the necessary permissions.
     """
     user = get_current_user()
     if not user:
-        print("You must be authenticated to access contracts.")
-        return []
+        raise PermissionError("Authentication required. Please login.")
 
     if not has_permission(user, 'read_contracts'):
-        print("You do not have permission to access contracts.")
-        return []
+        raise PermissionError("You do not have permission to view contracts.")
 
     with SessionLocal as session:
-        contracts = session.query(Contract).all()
-        return contracts
+        return session.query(Contract).all()
 
 
 def get_all_events():
     """
-    Get all events if the user is authenticated and has the necessary permissions.
+    Retrieves all events if the user is authenticated and has the necessary permissions.
     """
     user = get_current_user()
     if not user:
-        print("You must be authenticated to access events.")
-        return []
+        raise PermissionError("Authentication required. Please login.")
 
     if not has_permission(user, 'read_events'):
-        print("You do not have permission to access events.")
-        return []
+        raise PermissionError("You do not have permission to view events.")
 
     with SessionLocal as session:
-        events = session.query(Event).all()
-        return events
+        return session.query(Event).all()
