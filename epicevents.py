@@ -5,7 +5,7 @@ from services.employee_service import create_employee, update_employee
 from services.contract_service import create_contract, update_contract
 from services.client_service import create_client, update_client
 from services.event_service import create_event, update_event
-from auth import login as auth_login, logout as auth_logout, status
+from auth import login as auth_login, logout as auth_logout, status as auth_status
 
 
 @click.group()
@@ -16,14 +16,20 @@ def cli():
 
 @cli.command(name="login")
 def login_command():
-    """Log in"""
+    """Command log in"""
     auth_login()
 
 
 @cli.command(name="logout")
 def logout_command():
-    """Log out"""
+    """Command log out"""
     auth_logout()
+
+
+@cli.command(name="status")
+def status_command():
+    """Command status"""
+    auth_status()
 
 
 if __name__ == "__main__":
@@ -33,15 +39,6 @@ if __name__ == "__main__":
 def main():
     parser = argparse.ArgumentParser(description="Epic Events CRM")
     subparsers = parser.add_subparsers(dest='command')
-
-    # Command login
-    subparsers.add_parser('login', help='Se connecter')
-
-    # Command logout
-    subparsers.add_parser('logout', help='Se déconnecter')
-
-    # Command status
-    subparsers.add_parser('status', help='Afficher le statut de connexion')
 
     # Command list_clients
     subparsers.add_parser('list_clients', help='List all clients')
@@ -89,9 +86,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == 'status':
-        status()
-    elif args.command == 'list_clients':
+    if args.command == 'list_clients':
         list_clients()
     elif args.command == 'list_contracts':
         list_contracts()

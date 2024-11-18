@@ -1,3 +1,4 @@
+from sqlalchemy.orm import joinedload
 from config import JWT_SECRET, JWT_ALGORITHM, JWT_EXP_DELTA_SECONDS
 from EpicEventsCRM.utils.permissions import has_permission
 from EpicEventsCRM.models.employee_model import Employee
@@ -95,8 +96,11 @@ def get_current_user():
             employee_id = payload.get('employee_id')
             # Create a session to access the database
             with SessionLocal as session:
-                employee = session.query(Employee).filter_by(
-                    employee_id=employee_id).first()
+                employee = session.query(Employee).options(
+                    joinedload(Employee.clients),
+                    joinedload(Employee.contracts),
+                    joinedload(Employee.events)
+                ).filter_by(employee_id=employee_id).first()
                 return employee
     return None
 
@@ -175,11 +179,33 @@ def logout():
 
 def status():
     """
-    Displays the login status of the current user.
+    Displays the login status of the current user with a professional interface.
     """
     user = get_current_user()
     if user:
-        print(f"Logged in as {user.first_name} {
-              user.last_name} ({user.department.value})")
+        # Get related entity counts
+        num_clients = len(user.clients)
+        num_contracts = len(user.contracts)
+        num_events = len(user.events)
+
+        # Display user details
+        console.print(
+            Panel(
+                f":white_check_mark: [bold green]Logged in as[/bold green]\n"
+                f"[bold yellow]{user.first_name} {user.last_name}[/bold yellow]\n"
+                f"[bold cyan]Department:[/bold cyan] {user.department.value}\n"
+                f"[bold cyan]Email:[/bold cyan] {user.email}\n"
+                f"[bold cyan]Phone Number:[/bold cyan] {user.phone_number}\n\n"
+                f"[bold magenta]Related Data:[/bold magenta]\n"
+                f"- Clients: {num_clients}\n"
+                f"- Contracts: {num_contracts}\n"
+                f"- Events: {num_events}",
+                box=box.ROUNDED, style="bold green", expand=False
+            )
+        )
     else:
-        print("You are not logged in.")
+        console.print(
+            Panel(":x: [bold red]You are not logged in.[/bold red]\n"
+                  "Please log in to access your account.",
+                  box=box.ROUNDED, style="red", expand=False)
+        )
