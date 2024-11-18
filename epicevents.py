@@ -1,10 +1,33 @@
+import click
+import argparse
 from services.list_services import list_clients, list_contracts, list_events
 from services.employee_service import create_employee, update_employee
 from services.contract_service import create_contract, update_contract
 from services.client_service import create_client, update_client
 from services.event_service import create_event, update_event
-from auth import login, logout, status
-import argparse
+from auth import login as auth_login, logout as auth_logout, status
+
+
+@click.group()
+def cli():
+    """Epic Events CRM"""
+    pass
+
+
+@cli.command(name="login")
+def login_command():
+    """Log in"""
+    auth_login()
+
+
+@cli.command(name="logout")
+def logout_command():
+    """Log out"""
+    auth_logout()
+
+
+if __name__ == "__main__":
+    cli()
 
 
 def main():
@@ -66,11 +89,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == 'login':
-        login()
-    elif args.command == 'logout':
-        logout()
-    elif args.command == 'status':
+    if args.command == 'status':
         status()
     elif args.command == 'list_clients':
         list_clients()
@@ -96,7 +115,3 @@ def main():
         update_event(args.event_id)
     else:
         parser.print_help()
-
-
-if __name__ == '__main__':
-    main()

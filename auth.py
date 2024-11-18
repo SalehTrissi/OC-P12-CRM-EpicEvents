@@ -4,10 +4,16 @@ from EpicEventsCRM.models.employee_model import Employee
 from datetime import datetime, timedelta, timezone
 from db.database import SessionLocal
 from sqlalchemy.orm import Session
+from rich.console import Console
+from rich.prompt import Prompt
+from rich.panel import Panel
 from getpass import getpass
+from rich import box
 import jwt
 import os
 
+
+console = Console()
 
 # File to store the JWT token locally
 TOKEN_FILE = '.epicevents_token'
@@ -108,27 +114,63 @@ def is_authorized(permission_name: str):
 
 def login():
     """
-    Handles the user login process.
+    Handles the user login process with a stylish and professional interface.
     """
-    email = input("Email: ").strip().lower()
-    password = getpass("Password: ")
+    console.print(Panel("[bold cyan]Welcome to Epic Events CRM Login[/bold cyan]",
+                        box=box.ROUNDED, style="bold green", expand=False))
+
+    email = Prompt.ask("[bold yellow]Enter your Email[/bold yellow]").strip().lower()
+
+    # Display the password prompt using Rich and pass a plain string to getpass
+    console.print("[bold yellow]Enter your Password:[/bold yellow]", end="")
+    password = getpass(" ")
+
+    # Simulate authentication process with a progress bar
+    console.print("\n[bold yellow]Authenticating...[/bold yellow]\n", style="dim")
 
     # Create a session to access the database
     with SessionLocal as session:
         token = authenticate(session, email, password)
+
     if token:
         save_token(token)
-        print("Authentication successful.")
+        console.print(
+            Panel(":white_check_mark: [bold green]Authentication successful![/bold green]\n"
+                  "Welcome back, [bold yellow]{}[/bold yellow]!".format(email),
+                  box=box.DOUBLE, style="green", expand=False))
     else:
-        print("Authentication failed.")
+        console.print(
+            Panel(":x: [bold red]Authentication failed! Please check your credentials.[/bold red]",
+                  box=box.DOUBLE, style="red", expand=False))
+
+        # Suggest retrying
+        retry_prompt = Prompt.ask(
+            "[bold yellow]Would you like to try again? (yes/no)[/bold yellow]", default="yes")
+        if retry_prompt.strip().lower() == "yes":
+            console.print("\n[bold green]Let's try again![/bold green]")
+            login()
+        else:
+            console.print("\n[bold red]Exiting... Have a great day![/bold red]")
 
 
 def logout():
     """
-    Manages the user logout process.
+    Manages the user logout process with a professional and styled interface.
     """
-    delete_token()
-    print("You are logged out.")
+    if os.path.exists(TOKEN_FILE):
+        # Simulate logout process
+        delete_token()
+        console.print(
+            Panel(":wave: [bold cyan]You are successfully logged out.[/bold cyan]\n"
+                  "See you next time!",
+                  box=box.ROUNDED, style="bold green", expand=False)
+        )
+    else:
+        console.print(
+            Panel(":warning: [bold yellow]You are already logged out![/bold yellow]\n"
+                  "No active session found.",
+                  box=box.ROUNDED, style="yellow", expand=False)
+        )
 
 
 def status():
