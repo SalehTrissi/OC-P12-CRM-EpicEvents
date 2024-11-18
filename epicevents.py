@@ -1,11 +1,11 @@
-import click
-import argparse
+from auth import login as auth_login, logout as auth_logout, status as auth_status
 from services.list_services import list_clients, list_contracts, list_events
 from services.employee_service import create_employee, update_employee
 from services.contract_service import create_contract, update_contract
 from services.client_service import create_client, update_client
 from services.event_service import create_event, update_event
-from auth import login as auth_login, logout as auth_logout, status as auth_status
+import argparse
+import click
 
 
 @click.group()
@@ -30,6 +30,24 @@ def logout_command():
 def status_command():
     """Command status"""
     auth_status()
+
+
+@cli.command(name="list-clients")
+def list_clients_command():
+    """Command to list all clients"""
+    list_clients()
+
+
+@cli.command(name="list-contracts")
+def list_contracts_command():
+    """Command to list all contracts"""
+    list_contracts()
+
+
+@cli.command(name="list-events")
+def list_events_command():
+    """Command to list all events"""
+    list_events()
 
 
 if __name__ == "__main__":
@@ -86,13 +104,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == 'list_clients':
-        list_clients()
-    elif args.command == 'list_contracts':
-        list_contracts()
-    elif args.command == 'list_events':
-        list_events()
-    elif args.command == 'create_employee':
+    if args.command == 'create_employee':
         create_employee()
     elif args.command == 'update_employee':
         update_employee(args.employee_id)
