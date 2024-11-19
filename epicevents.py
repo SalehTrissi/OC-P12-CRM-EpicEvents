@@ -4,13 +4,57 @@ from services.employee_service import create_employee, update_employee
 from services.contract_service import create_contract, update_contract
 from services.client_service import create_client, update_client
 from services.event_service import create_event, update_event
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich import box
 import click
+
+
+console = Console()
 
 
 @click.group()
 def cli():
     """Epic Events CRM"""
     pass
+
+
+@cli.command(name="menu")
+def menu_command():
+    """Display a menu of available commands."""
+    console.print(Panel("[bold cyan]Welcome to Epic Events CRM Command Menu[/bold cyan]",
+                        box=box.ROUNDED, style="bold green"))
+    table = Table(title="[bold magenta]Available Commands[/bold magenta]",
+                  box=box.ROUNDED, header_style="bold white")
+    table.add_column("Command", justify="left", style="cyan")
+    table.add_column("Description", justify="left", style="green")
+
+    # List of commands and their descriptions
+    commands = [
+        ("menu", "Display this menu."),
+        ("login", "Log in to the system."),
+        ("logout", "Log out of the system."),
+        ("status", "Display the current login status."),
+        ("list-clients", "List all clients."),
+        ("list-contracts", "List all contracts."),
+        ("list-events", "List all events."),
+        ("create-employee", "Create a new employee."),
+        ("update-employee <employee_id>", "Update an existing employee."),
+        ("create-client", "Create a new client."),
+        ("update-client <client_id>", "Update an existing client."),
+        ("create-contract", "Create a new contract."),
+        ("update-contract <contract_id>", "Update an existing contract."),
+        ("create-event", "Create a new event."),
+        ("update-event <event_id>", "Update an existing event."),
+        ("--help", "Display the help for a specific command."),
+    ]
+
+    # Populate table with commands
+    for command, description in commands:
+        table.add_row(f"[bold cyan]{command}[/bold cyan]", description)
+
+    console.print(table)
 
 
 @cli.command(name="login")
