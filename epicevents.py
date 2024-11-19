@@ -50,6 +50,19 @@ def list_events_command():
     list_events()
 
 
+@cli.command(name="create-employee")
+def create_employee_command():
+    """Create a new employee"""
+    create_employee()
+
+
+@cli.command(name="update-employee")
+@click.argument("employee_id", type=int)
+def update_employee_command(employee_id):
+    """Update an existing employee"""
+    update_employee(employee_id)
+
+
 if __name__ == "__main__":
     cli()
 

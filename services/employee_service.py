@@ -4,37 +4,49 @@ from sqlalchemy.exc import IntegrityError
 from db.database import SessionLocal
 from auth import get_current_user
 from getpass import getpass
+from rich.console import Console
+from rich.prompt import Prompt
+from rich.panel import Panel
+from rich import box
+
+console = Console()
 
 
 def create_employee():
     """
-    Creates a new employee if the user has the necessary permissions.
+    Creates a new employee with a user-friendly and visually appealing interface.
     """
     current_user = get_current_user()
     if not current_user:
-        print("You must be authenticated to create an employee.")
+        console.print(
+            Panel("[bold red]You must be authenticated to create an employee.[/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'manage_users'):
-        print("You do not have permission to create an employee.")
+        console.print(
+            Panel("[bold red]You do not have permission to create an employee.[/bold red]", box=box.ROUNDED))
         return
+
+    console.print(Panel("[bold cyan]Create New Employee[/bold cyan]",
+                        box=box.ROUNDED, style="bold green"))
 
     # Collect employee information
-    first_name = input("First name: ")
-    last_name = input("Last name: ")
-    email = input("Email: ")
-    phone_number = input("Phone number: ")
-    department_input = input("Department (COMMERCIAL/SUPPORT/MANAGEMENT): ").upper()
-    password = getpass("Password: ")
+    first_name = Prompt.ask("[bold yellow]Enter first name[/bold yellow]")
+    last_name = Prompt.ask("[bold yellow]Enter last name[/bold yellow]")
+    email = Prompt.ask("[bold yellow]Enter email address[/bold yellow]")
+    phone_number = Prompt.ask("[bold yellow]Enter phone number[/bold yellow]")
+    department_input = Prompt.ask(
+        "[bold yellow]Select department (COMMERCIAL, SUPPORT, MANAGEMENT)[/bold yellow]",
+        choices=["COMMERCIAL", "SUPPORT", "MANAGEMENT"],
+        default="COMMERCIAL"
+    ).upper()
+    console.print("[bold yellow]Enter password:[/bold yellow]", end="")
+    password = getpass(" ")
 
     # Verify department
-    if department_input not in DepartmentEnum.__members__:
-        print("Invalid department. Please choose from COMMERCIAL, SUPPORT or MANAGEMENT.")
-        return
-
     department = DepartmentEnum[department_input]
 
-    # Create employee
+    # Create employee object
     employee = Employee(
         first_name=first_name,
         last_name=last_name,
@@ -49,71 +61,113 @@ def create_employee():
         session.add(employee)
         try:
             session.commit()
-            print("Employee created successfully.")
+            console.print(
+                Panel(f"[bold green]Employee '{first_name} {last_name}' created successfully![/bold green]",
+                      box=box.ROUNDED))
         except IntegrityError:
             session.rollback()
-            print("Error: An employee with this email already exists.")
+            console.print(Panel(
+                "[bold red]Error: An employee with this email already exists.[/bold red]", box=box.ROUNDED))
         except Exception as e:
             session.rollback()
-            print(f"Error creating employee: {e}")
+            console.print(Panel(f"[bold red]Error creating employee: {
+                          e}[/bold red]", box=box.ROUNDED))
 
 
 def update_employee(employee_id):
     """
-    Updates an employee's information if the user has the necessary permissions.
+    Updates an employee's information with a user-friendly and visually appealing interface.
     """
     current_user = get_current_user()
     if not current_user:
-        print("You must be authenticated to edit an employee.")
+        console.print(
+            Panel("[bold red]You must be authenticated to update an employee.[/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'manage_users'):
-        print("You do not have permission to edit an employee.")
+        console.print(
+            Panel("[bold red]You do not have permission to update an employee.[/bold red]", box=box.ROUNDED))
         return
 
     with SessionLocal as session:
         employee = session.query(Employee).filter_by(employee_id=employee_id).first()
         if not employee:
-            print("Employee not found.")
+            console.print(
+                Panel("[bold red]Employee not found.[/bold red]", box=box.ROUNDED))
             return
+
+        console.print(Panel(f"[bold cyan]Update Employee: {employee.first_name} {employee.last_name}[/bold cyan]",
+                            box=box.ROUNDED, style="bold green"))
+
+        console.print(
+            "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n")
 
         # Collecting new information
-        print("Leave blank to not modify the field.")
-        first_name = input(
-            f"First name ({employee.first_name}): ") or employee.first_name
-        last_name = input(f"Name ({employee.last_name}): ") or employee.last_name
-        email = input(f"Email ({employee.email}): ") or employee.email
-        phone_number = input(
-            f"Phone number ({employee.phone_number}): ") or employee.phone_number
-        department_input = input(
-            f"Department ({employee.department.name}): ").upper() or employee.department.name
+        first_name = Prompt.ask(
+            f"[bold yellow]First name[/bold yellow] [bold green](current: {
+                employee.first_name})[/bold green]",
+            default=employee.first_name,
+            show_default=False
+        )
+        last_name = Prompt.ask(
+            f"[bold yellow]Last name[/bold yellow] [bold green](current: {
+                employee.last_name})[/bold green]",
+            default=employee.last_name,
+            show_default=False
+        )
+        email = Prompt.ask(
+            f"[bold yellow]Email[/bold yellow] [bold green](current: {
+                employee.email})[/bold green]",
+            default=employee.email,
+            show_default=False
+        )
+        phone_number = Prompt.ask(
+            f"[bold yellow]Phone number[/bold yellow] [bold green](current: {
+                employee.phone_number})[/bold green]",
+            default=employee.phone_number,
+            show_default=False
+        )
+        department_input = Prompt.ask(
+            f"[bold yellow]Department[/bold yellow] [bold green](current: {
+                employee.department.name})[/bold green]",
+            choices=["COMMERCIAL", "SUPPORT", "MANAGEMENT"],
+            default=employee.department.name,
+            show_default=False
+        ).upper()
 
-        if department_input not in DepartmentEnum.__members__:
-            print("Invalid department. Please choose from COMMERCIAL, SUPPORT or MANAGEMENT.")
-            return
-
+        # Verify department
         department = DepartmentEnum[department_input]
 
-        # Update employee
+        # Update employee details
         employee.first_name = first_name
         employee.last_name = last_name
         employee.email = email
         employee.phone_number = phone_number
         employee.department = department
 
-        # Update password
-        change_password = input("Do you want to change password? (Y/N) : ").upper()
-        if change_password == 'O':
-            password = getpass("New password: ")
+        # Prompt for password change
+        change_password = Prompt.ask(
+            "[bold yellow]Do you want to change the password?[/bold yellow]",
+            choices=["yes", "no"],
+            default="no",
+            show_default=False
+        ).lower()
+        if change_password == "yes":
+            console.print("[bold yellow]Enter new password:[/bold yellow]", end="")
+            password = getpass(" ")
             employee.set_password(password)
 
-        # Save to database
+        # Save changes to database
         try:
             session.commit()
-            print("Employee successfully updated.")
+            console.print(
+                Panel(f"[bold green]Employee '{first_name} {last_name}' updated successfully![/bold green]",
+                      box=box.ROUNDED))
         except IntegrityError:
             session.rollback()
-            print("Error: An employee with this email already exists.")
+            console.print(Panel(
+                "[bold red]Error: An employee with this email already exists.[/bold red]", box=box.ROUNDED))
         except Exception as e:
             session.rollback()
-            print(f"Error updating employee: {e}")
+            console.print(Panel(f"[bold red]Error updating employee: {
+                          e}[/bold red]", box=box.ROUNDED))
