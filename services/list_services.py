@@ -40,8 +40,8 @@ def list_clients():
                     client.email,
                     client.phone_number,
                     client.company_name,
-                    client.date_created.strftime("%Y-%m-%d %H:%M:%S"),
-                    client.last_contact_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    client.date_created.strftime("%d-%m-%Y %H:%M:%S"),
+                    client.last_contact_date.strftime("%d-%m-%Y %H:%M:%S"),
                     f"{client.sales_contact.first_name} {
                         client.sales_contact.last_name}"
                 )
@@ -87,7 +87,7 @@ def list_contracts():
                     f"{contract.total_amount:.2f}€",
                     f"{contract.remaining_amount:.2f}€",
                     "[bold green]Signed[/bold green]" if contract.is_signed else "[bold red]Unsigned[/bold red]",
-                    contract.date_created.strftime("%Y-%m-%d %H:%M:%S"),
+                    contract.date_created.strftime("%d-%m-%Y %H:%M:%S"),
                     f"{contract.sales_contact.first_name} {
                         contract.sales_contact.last_name}"
                 )
@@ -133,8 +133,8 @@ def list_events():
                     event.event_name,
                     event.client.full_name,
                     f"{event.client.email} \n {event.client.phone_number}",
-                    event.event_start_date.strftime("%Y-%m-%d %H:%M:%S"),
-                    event.event_end_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    event.event_start_date.strftime("%d-%m-%Y %H:%M:%S"),
+                    event.event_end_date.strftime("%d-%m-%Y %H:%M:%S"),
                     event.location,
                     str(event.attendees),
                     f"{event.support_contact.first_name} {
