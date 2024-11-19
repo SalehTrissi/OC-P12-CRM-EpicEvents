@@ -3,26 +3,38 @@ from EpicEventsCRM.models.client_model import Client
 from sqlalchemy.exc import IntegrityError
 from db.database import SessionLocal
 from auth import get_current_user
+from rich.console import Console
+from rich.prompt import Prompt
+from rich.panel import Panel
+from rich import box
+
+
+console = Console()
 
 
 def create_client():
     """
-    Creates a new client if the user has the necessary permissions.
+    Creates a new client with a user-friendly and visually appealing interface.
     """
     current_user = get_current_user()
     if not current_user:
-        print("You must be authenticated to create a client.")
+        console.print(
+            Panel("[bold red]You must be authenticated to create a client.[/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'create_client'):
-        print("You do not have permission to create a client.")
+        console.print(
+            Panel("[bold red]You do not have permission to create a client.[/bold red]", box=box.ROUNDED))
         return
 
-    # Collecting customer information
-    full_name = input("Full Name: ")
-    email = input("Email: ")
-    phone_number = input("Phone Number: ")
-    company_name = input("Company Name: ")
+    console.print(Panel("[bold cyan]Create New Client[/bold cyan]",
+                        box=box.ROUNDED, style="bold green"))
+
+    # Collecting client information
+    full_name = Prompt.ask("[bold yellow]Enter full name[/bold yellow]")
+    email = Prompt.ask("[bold yellow]Enter email address[/bold yellow]")
+    phone_number = Prompt.ask("[bold yellow]Enter phone number[/bold yellow]")
+    company_name = Prompt.ask("[bold yellow]Enter company name[/bold yellow]")
 
     client = Client(
         full_name=full_name,
@@ -37,57 +49,90 @@ def create_client():
         session.add(client)
         try:
             session.commit()
-            print("Client created successfully.")
+            console.print(
+                Panel(f"[bold green]Client '{full_name}' created successfully![/bold green]",
+                      box=box.ROUNDED))
         except IntegrityError:
             session.rollback()
-            print("Error: A customer with this email already exists.")
+            console.print(Panel(
+                "[bold red]Error: A client with this email already exists.[/bold red]", box=box.ROUNDED))
         except Exception as e:
             session.rollback()
-            print(f"Error creating client: {e}")
+            console.print(Panel(f"[bold red]Error creating client: {
+                          e}[/bold red]", box=box.ROUNDED))
 
 
 def update_client(client_id):
     """
-    Updates a client's information if the user has the necessary permissions.
+    Updates a client's information with a user-friendly and visually appealing interface.
     """
     current_user = get_current_user()
     if not current_user:
-        print("You must be authenticated to modify a client.")
+        console.print(
+            Panel("[bold red]You must be authenticated to update a client.[/bold red]", box=box.ROUNDED))
         return
 
     with SessionLocal as session:
         client = session.query(Client).filter_by(client_id=client_id).first()
         if not client:
-            print("Client not found.")
+            console.print(
+                Panel("[bold red]Client not found.[/bold red]", box=box.ROUNDED))
             return
 
-        # Check if the user has the right to modify this client
         if not has_permission(current_user, 'update_client'):
-            print("You do not have permission to modify this client.")
+            console.print(
+                Panel("[bold red]You do not have permission to update this client.[/bold red]", box=box.ROUNDED))
             return
+
+        console.print(Panel(f"[bold cyan]Update Client: {client.full_name}[/bold cyan]",
+                            box=box.ROUNDED, style="bold green"))
+
+        console.print(
+            "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n")
 
         # Collecting new information
-        print("Leave blank to not modify the field.")
-        full_name = input(f"Full name ({client.full_name}): ") or client.full_name
-        email = input(f"Email ({client.email}): ") or client.email
-        phone_number = input(
-            f"Phone number ({client.phone_number}): ") or client.phone_number
-        company_name = input(
-            f"Company name ({client.company_name}): ") or client.company_name
+        full_name = Prompt.ask(
+            f"[bold yellow]Full name[/bold yellow] [bold green](current: {
+                client.full_name})[/bold green]",
+            default=client.full_name,
+            show_default=False
+        )
+        email = Prompt.ask(
+            f"[bold yellow]Email[/bold yellow] [bold green](current: {
+                client.email})[/bold green]",
+            default=client.email,
+            show_default=False
+        )
+        phone_number = Prompt.ask(
+            f"[bold yellow]Phone number[/bold yellow] [bold green](current: {
+                client.phone_number})[/bold green]",
+            default=client.phone_number,
+            show_default=False
+        )
+        company_name = Prompt.ask(
+            f"[bold yellow]Company name[/bold yellow] [bold green](current: {
+                client.company_name})[/bold green]",
+            default=client.company_name,
+            show_default=False
+        )
 
-        # Mise à jour du client
+        # Update client details
         client.full_name = full_name
         client.email = email
         client.phone_number = phone_number
         client.company_name = company_name
 
-        # Save to database
+        # Save changes to database
         try:
             session.commit()
-            print("Client updated successfully.")
+            console.print(
+                Panel(f"[bold green]Client '{full_name}' updated successfully![/bold green]",
+                      box=box.ROUNDED))
         except IntegrityError:
             session.rollback()
-            print("Error: A customer with this email already exists.")
+            console.print(Panel(
+                "[bold red]Error: A client with this email already exists.[/bold red]", box=box.ROUNDED))
         except Exception as e:
             session.rollback()
-            print(f"Error updating client: {e}")
+            console.print(Panel(f"[bold red]Error updating client: {
+                          e}[/bold red]", box=box.ROUNDED))

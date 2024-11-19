@@ -63,6 +63,19 @@ def update_employee_command(employee_id):
     update_employee(employee_id)
 
 
+@cli.command(name="create-client")
+def create_client_command():
+    """Create a new client"""
+    create_client()
+
+
+@cli.command(name="update-client")
+@click.argument("client_id", type=int)
+def update_client_command(client_id):
+    """Update an existing client"""
+    update_client(client_id)
+
+
 if __name__ == "__main__":
     cli()
 
@@ -70,33 +83,6 @@ if __name__ == "__main__":
 def main():
     parser = argparse.ArgumentParser(description="Epic Events CRM")
     subparsers = parser.add_subparsers(dest='command')
-
-    # Command list_clients
-    subparsers.add_parser('list_clients', help='List all clients')
-
-    # Command list_contracts
-    subparsers.add_parser('list_contracts', help='List all contracts')
-
-    # Command list_events
-    subparsers.add_parser('list_events', help='List all events')
-
-    # create_employee command
-    subparsers.add_parser('create_employee', help='Create a new employee')
-
-    # update_employee command
-    parser_update_employee = subparsers.add_parser(
-        'update_employee', help='Update an employee')
-    parser_update_employee.add_argument(
-        'employee_id', type=int, help='ID of the employee to update')
-
-    # create_client command
-    subparsers.add_parser('create_client', help='Create a new client')
-
-    # update_client command
-    parser_update_client = subparsers.add_parser(
-        'update_client', help='Update an client')
-    parser_update_client.add_argument(
-        'client_id', type=int, help='ID of the client to update')
 
     # create_contract command
     subparsers.add_parser('create_contract', help='Create a new contract')
@@ -117,15 +103,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == 'create_employee':
-        create_employee()
-    elif args.command == 'update_employee':
-        update_employee(args.employee_id)
-    elif args.command == 'create_client':
-        create_client()
-    elif args.command == 'update_client':
-        update_client(args.client_id)
-    elif args.command == 'create_contract':
+    if args.command == 'create_contract':
         create_contract()
     elif args.command == 'update_contract':
         update_contract(args.contract_id)
