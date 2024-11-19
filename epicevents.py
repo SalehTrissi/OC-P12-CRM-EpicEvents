@@ -76,6 +76,19 @@ def update_client_command(client_id):
     update_client(client_id)
 
 
+@cli.command(name="create-contract")
+def create_contract_command():
+    """Create a new contract"""
+    create_contract()
+
+
+@cli.command(name="update-contract")
+@click.argument("contract_id", type=int)
+def update_contract_command(contract_id):
+    """Update an existing contract"""
+    update_contract(contract_id)
+
+
 if __name__ == "__main__":
     cli()
 
@@ -83,15 +96,6 @@ if __name__ == "__main__":
 def main():
     parser = argparse.ArgumentParser(description="Epic Events CRM")
     subparsers = parser.add_subparsers(dest='command')
-
-    # create_contract command
-    subparsers.add_parser('create_contract', help='Create a new contract')
-
-    # Command update_contract
-    parser_update_contract = subparsers.add_parser(
-        'update_contract', help='Update a contract')
-    parser_update_contract.add_argument(
-        'contract_id', type=int, help='ID of the contract to update')
 
     # create_event command
     subparsers.add_parser('create_event', help='Create a new event')
@@ -103,11 +107,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == 'create_contract':
-        create_contract()
-    elif args.command == 'update_contract':
-        update_contract(args.contract_id)
-    elif args.command == 'create_event':
+    if args.command == 'create_event':
         create_event()
     elif args.command == 'update_event':
         update_event(args.event_id)

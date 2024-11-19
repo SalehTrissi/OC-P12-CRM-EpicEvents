@@ -4,59 +4,78 @@ from EpicEventsCRM.models.contract_model import Contract
 from EpicEventsCRM.models.client_model import Client
 from db.database import SessionLocal
 from auth import get_current_user
+from rich.console import Console
+from rich.prompt import Prompt
+from rich.panel import Panel
+from rich import box
+
+
+console = Console()
 
 
 def create_contract():
     """
-    Creates a new contract if the user has the necessary permissions.
+    Creates a new contract with a user-friendly and visually appealing interface.
     """
     current_user = get_current_user()
     if not current_user:
-        print("You must be authenticated to create a contract.")
+        console.print(
+            Panel("[bold red]You must be authenticated to create a contract.[/bold red]", box=box.ROUNDED))
         return
+
     if not has_permission(current_user, 'create_contract'):
-        print("You do not have permission to create a contract.")
+        console.print(
+            Panel("[bold red]You do not have permission to create a contract.[/bold red]", box=box.ROUNDED))
+        return
+
+    console.print(Panel("[bold cyan]Create New Contract[/bold cyan]",
+                        box=box.ROUNDED, style="bold green"))
+
+    # Select client
+    client_id_input = Prompt.ask("[bold yellow]Enter Client ID[/bold yellow]")
+    try:
+        client_id = int(client_id_input)
+    except ValueError:
+        console.print(Panel("[bold red]Invalid Client ID.[/bold red]", box=box.ROUNDED))
         return
 
     with SessionLocal as session:
-        # Customer selection
-        client_id_input = input("Customer ID : ")
-
-        try:
-            client_id = int(client_id_input)
-        except ValueError:
-            print("Invalid client ID.")
-            return
-
         client = session.query(Client).filter_by(client_id=client_id).first()
         if not client:
-            print("Client not found.")
+            console.print(
+                Panel("[bold red]Client not found.[/bold red]", box=box.ROUNDED))
             return
 
-        # Collecting contract information
+        # Collect contract information
         try:
-            total_amount = float(input("Total amount: "))
+            total_amount = float(Prompt.ask(
+                "[bold yellow]Enter total amount[/bold yellow]"))
             total_amount = validate_positive_amount(total_amount, 'total_amount')
         except ValueError as ve:
-            print(f"Validation error: {ve}")
+            console.print(Panel(f"[bold red]Validation error: {
+                          ve}[/bold red]", box=box.ROUNDED))
             return
 
         try:
-            remaining_amount = float(input("Remaining amount: "))
+            remaining_amount = float(Prompt.ask(
+                "[bold yellow]Enter remaining amount[/bold yellow]"))
             remaining_amount = validate_positive_amount(
                 remaining_amount, 'remaining_amount')
         except ValueError as ve:
-            print(f"Validation error: {ve}")
+            console.print(Panel(f"[bold red]Validation error: {
+                          ve}[/bold red]", box=box.ROUNDED))
             return
 
         if remaining_amount > total_amount:
-            print("The remaining amount cannot be greater than the total amount.")
+            console.print(Panel("[bold red]The remaining amount cannot be greater than the total amount.[/bold red]",
+                                box=box.ROUNDED))
             return
 
-        is_signed_input = input("Contract signed? (Y/N): ").upper()
-        is_signed = True if is_signed_input == "y" else False
+        is_signed_input = Prompt.ask(
+            "[bold yellow]Is the contract signed? (Y/N)[/bold yellow]", default="N").upper()
+        is_signed = is_signed_input == "Y"
 
-        # Contract creation
+        # Create contract
         contract = Contract(
             total_amount=total_amount,
             remaining_amount=remaining_amount,
@@ -66,86 +85,96 @@ def create_contract():
         )
 
         # Save to database
-        with SessionLocal as session:
-            session.add(contract)
-            try:
-                session.commit()
-                print("Contract created successfully.")
-            except Exception as e:
-                session.rollback()
-                print(f"Error creating contract: {e}")
+        session.add(contract)
+        try:
+            session.commit()
+            console.print(
+                Panel("[bold green]Contract created successfully![/bold green]", box=box.ROUNDED))
+        except Exception as e:
+            session.rollback()
+            console.print(Panel(f"[bold red]Error creating contract: {
+                          e}[/bold red]", box=box.ROUNDED))
 
 
 def update_contract(contract_id):
     """
-    Updates the information of a contract if the user has the necessary permissions.
+    Updates a contract with a user-friendly and visually appealing interface.
     """
     current_user = get_current_user()
     if not current_user:
-        print("You must be authenticated to modify a contract.")
+        console.print(
+            Panel("[bold red]You must be authenticated to update a contract.[/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'modify_contract'):
-        print("Vous n'avez pas la permission de modifier un contrat.")
+        console.print(
+            Panel("[bold red]You do not have permission to modify a contract.[/bold red]", box=box.ROUNDED))
         return
 
     with SessionLocal as session:
         try:
             contract_id = int(contract_id)
         except ValueError:
-            print("Invalid contract ID.")
+            console.print(
+                Panel("[bold red]Invalid Contract ID.[/bold red]", box=box.ROUNDED))
             return
 
         contract = session.query(Contract).filter_by(contract_id=contract_id).first()
         if not contract:
-            print("Contract not found.")
+            console.print(
+                Panel("[bold red]Contract not found.[/bold red]", box=box.ROUNDED))
             return
 
-        # Check if the user has the right to modify this contract
-        if not has_permission(current_user, 'modify_contract'):
-            print("You do not have permission to modify this contract.")
-            return
+        console.print(Panel(f"[bold cyan]Update Contract: {contract.contract_id}[/bold cyan]",
+                            box=box.ROUNDED, style="bold green"))
+
+        console.print(
+            "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n")
 
         # Collecting new information
-        print("Leave blank to not modify the field.")
-        total_amount_input = input(f"Total amount ({contract.total_amount}): ")
-        if total_amount_input:
-            try:
-                total_amount = float(total_amount_input)
-                total_amount = validate_positive_amount(total_amount, 'total_amount')
-            except ValueError as ve:
-                print(f"Validation error: {ve}")
-                return
-        else:
-            total_amount = contract.total_amount
-
-        remaining_amount_input = input(
-            f"Remaining amount ({contract.remaining_amount}): ")
-        if remaining_amount_input:
-            try:
-                remaining_amount = float(remaining_amount_input)
-                remaining_amount = validate_positive_amount(
-                    remaining_amount, 'remaining_amount')
-            except Exception as ve:
-                print(f"Validation error: {ve}")
-                return
-        else:
-            remaining_amount = contract.remaining_amount
-
-        if remaining_amount > total_amount:
-            print("The remaining amount cannot be greater than the total amount.")
+        total_amount_input = Prompt.ask(
+            f"[bold yellow]Total amount[/bold yellow] [bold green](current: {
+                contract.total_amount})[/bold green]",
+            default=str(contract.total_amount),
+            show_default=False
+        )
+        try:
+            total_amount = float(total_amount_input)
+            total_amount = validate_positive_amount(total_amount, 'total_amount')
+        except ValueError as ve:
+            console.print(Panel(f"[bold red]Validation error: {
+                          ve}[/bold red]", box=box.ROUNDED))
             return
 
-        is_signed_input = input(
-            f"Signed contract ({'Y' if contract.is_signed else 'N'}) ? (Y/N): ").upper()
-        if is_signed_input == 'Y':
-            is_signed = True
-        elif is_signed_input == 'N':
-            is_signed = False
-        else:
-            is_signed = contract.is_signed
+        remaining_amount_input = Prompt.ask(
+            f"[bold yellow]Remaining amount[/bold yellow] [bold green](current: {
+                contract.remaining_amount})[/bold green]",
+            default=str(contract.remaining_amount),
+            show_default=False
+        )
+        try:
+            remaining_amount = float(remaining_amount_input)
+            remaining_amount = validate_positive_amount(
+                remaining_amount, 'remaining_amount')
+        except ValueError as ve:
+            console.print(Panel(f"[bold red]Validation error: {
+                          ve}[/bold red]", box=box.ROUNDED))
+            return
 
-        # Contract update
+        if remaining_amount > total_amount:
+            console.print(Panel("[bold red]The remaining amount cannot be greater than the total amount.[/bold red]",
+                                box=box.ROUNDED))
+            return
+
+        is_signed_input = Prompt.ask(
+            f"[bold yellow]Signed contract[/bold yellow] [bold green](current: {
+                'Y' if contract.is_signed else 'N'})[/bold green]",
+            default="Y" if contract.is_signed else "N",
+            show_default=False
+        ).upper()
+        is_signed = is_signed_input == "Y"
+
+        # Update contract
         contract.total_amount = total_amount
         contract.remaining_amount = remaining_amount
         contract.is_signed = is_signed
@@ -153,7 +182,9 @@ def update_contract(contract_id):
         # Save to database
         try:
             session.commit()
-            print("Contrat mis à jour avec succès.")
+            console.print(
+                Panel("[bold green]Contract updated successfully![/bold green]", box=box.ROUNDED))
         except Exception as e:
             session.rollback()
-            print(f"Error updating contract: {e}")
+            console.print(Panel(f"[bold red]Error updating contract: {
+                          e}[/bold red]", box=box.ROUNDED))
