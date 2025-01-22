@@ -1,9 +1,9 @@
+from ..utils.validators import validate_string_length, validate_positive_integer
 from sqlalchemy import (
     Column, Integer, String, DateTime, ForeignKey
 )
-from ..utils.validators import validate_string_length
 from sqlalchemy.orm import relationship, validates
-from datetime import datetime
+from datetime import datetime, timezone
 from .base_model import Base
 
 
@@ -39,9 +39,7 @@ class Event(Base):
 
     @validates('attendees')
     def validate_attendees(self, key, value):
-        if value < 0:
-            raise ValueError("Le nombre de participants ne peut pas être négatif")
-        return value
+        return validate_positive_integer(value, key)
 
     # Méthode utilitaire
     @classmethod
@@ -49,7 +47,7 @@ class Event(Base):
         """
         Retourne les événements à venir pour un employé du support donné.
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         return session.query(cls).filter(
             cls.support_contact_id == support_employee_id,
             cls.event_start_date >= now

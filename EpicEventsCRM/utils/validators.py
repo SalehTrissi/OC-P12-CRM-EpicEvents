@@ -27,3 +27,9 @@ def validate_positive_amount(value, field_name):
     if value < 0:
         raise ValueError(f"Le montant {field_name} ne peut pas être négatif")
     return value
+
+
+def validate_positive_integer(value, field_name):
+    if value < 0:
+        raise ValueError(f"La valeur de {field_name} ne peut pas être négative")
+    return value
