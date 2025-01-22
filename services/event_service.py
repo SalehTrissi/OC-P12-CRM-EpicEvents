@@ -22,12 +22,14 @@ def create_event():
 
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to create an event.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You must be authenticated to create an event."
+                  "[/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'create_event'):
         console.print(
-            Panel("[bold red]You do not have permission to create an event.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You do not have permission to create an event."
+                  "[/bold red]", box=box.ROUNDED))
         return
 
     console.print(Panel("[bold cyan]Create New Event[/bold cyan]",
@@ -41,7 +43,8 @@ def create_event():
             contract_id=contract_id, is_signed=True).first()
         if not contract:
             console.print(
-                Panel("[bold red]Signed contract not found.[/bold red]", box=box.ROUNDED))
+                Panel("[bold red]Signed contract not found.[/bold red]",
+                      box=box.ROUNDED))
             return
 
         # Collect event information
@@ -64,11 +67,13 @@ def create_event():
             attendees = int(attendees_input)
             if attendees < 0:
                 console.print(
-                    Panel("[bold red]Number of participants cannot be negative.[/bold red]", box=box.ROUNDED))
+                    Panel("[bold red]Number of participants cannot be negative."
+                          "[/bold red]", box=box.ROUNDED))
                 return
         except ValueError:
             console.print(
-                Panel("[bold red]Invalid number of participants.[/bold red]", box=box.ROUNDED))
+                Panel("[bold red]Invalid number of participants.[/bold red]",
+                      box=box.ROUNDED))
             return
 
         notes = Prompt.ask("[bold yellow]Notes (optional)[/bold yellow]", default="")
@@ -78,13 +83,14 @@ def create_event():
             department=DepartmentEnum.SUPPORT).all()
         if not support_employees:
             console.print(
-                Panel("[bold red]No support staff available.[/bold red]", box=box.ROUNDED))
+                Panel("[bold red]No support staff available.[/bold red]",
+                      box=box.ROUNDED))
             return
 
         console.print("[bold yellow]List of support employees:[/bold yellow]")
         for emp in support_employees:
-            console.print(f"ID: [cyan]{
-                          emp.employee_id}[/cyan], Name: [green]{emp.first_name} {emp.last_name}[/green]")
+            console.print(f"ID: [cyan]{emp.employee_id}[/cyan],"
+                          f" Name: [green]{emp.first_name} {emp.last_name}[/green]")
 
         support_contact_id = Prompt.ask(
             "[bold yellow]ID of the support employee to assign[/bold yellow]")
@@ -92,7 +98,8 @@ def create_event():
             employee_id=support_contact_id, department=DepartmentEnum.SUPPORT).first()
         if not support_contact:
             console.print(
-                Panel("[bold red]Support employee not found.[/bold red]", box=box.ROUNDED))
+                Panel("[bold red]Support employee not found.[/bold red]",
+                      box=box.ROUNDED))
             return
 
         # Create event
@@ -113,7 +120,8 @@ def create_event():
         try:
             session.commit()
             console.print(
-                Panel("[bold green]Event created successfully![/bold green]", box=box.ROUNDED))
+                Panel("[bold green]Event created successfully![/bold green]",
+                      box=box.ROUNDED))
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error creating event: {
@@ -142,12 +150,14 @@ def update_event(event_id):
     current_user = get_current_user()
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to update an event.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You must be authenticated to update an event.[/bold red]",
+                  box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'update_event'):
         console.print(
-            Panel("[bold red]You do not have permission to update an event.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You do not have permission to update an event.[/bold red]",
+                  box=box.ROUNDED))
         return
 
     with SessionLocal as session:
@@ -171,14 +181,16 @@ def update_event(event_id):
             show_default=False
         )
         start_date_str = Prompt.ask(
-            f"[bold yellow]Start date (DD-MM-YYYY HH:MM)[/bold yellow] [bold green](current: {
-                event.event_start_date.strftime('%d-%m-%Y %H:%M')})[/bold green]",
+            f"[bold yellow]Start date (DD-MM-YYYY HH:MM)[/bold yellow] [bold green]"
+            f"(current: {event.event_start_date.strftime(
+                '%d-%m-%Y %H:%M')})[/bold green]",
             default=event.event_start_date.strftime("%d-%m-%Y %H:%M"),
             show_default=False
         )
         end_date_str = Prompt.ask(
-            f"[bold yellow]End date (DD-MM-YYYY HH:MM)[/bold yellow] [bold green](current: {
-                event.event_end_date.strftime('%d-%m-%Y %H:%M')})[/bold green]",
+            f"[bold yellow]End date (DD-MM-YYYY HH:MM)[/bold yellow]"
+            f" [bold green](current: {event.event_end_date.strftime('%d-%m-%Y %H:%M')})"
+            "[/bold green]",
             default=event.event_end_date.strftime("%d-%m-%Y %H:%M"),
             show_default=False
         )
@@ -203,21 +215,25 @@ def update_event(event_id):
 
         # Update or retain support contact
         console.print(f"[bold yellow]Current support contact:[/bold yellow] [green]{
-                      event.support_contact.first_name} {event.support_contact.last_name}[/green]")
+                      event.support_contact.first_name} "
+                      f"{event.support_contact.last_name}[/green]")
         update_support_contact = Prompt.ask(
-            "[bold yellow]Do you want to change the support contact? (Y/N)[/bold yellow]", default="N").upper()
+            "[bold yellow]Do you want to change the support contact?"
+            " (Y/N)[/bold yellow]", default="N").upper()
         if update_support_contact == 'Y':
             support_employees = session.query(Employee).filter_by(
                 department=DepartmentEnum.SUPPORT).all()
             if not support_employees:
                 console.print(
-                    Panel("[bold red]No support employees available.[/bold red]", box=box.ROUNDED))
+                    Panel("[bold red]No support employees available.[/bold red]",
+                          box=box.ROUNDED))
                 return
 
             console.print("[bold yellow]Available support employees:[/bold yellow]")
             for emp in support_employees:
                 console.print(f"ID: [cyan]{
-                              emp.employee_id}[/cyan], Name: [green]{emp.first_name} {emp.last_name}[/green]")
+                              emp.employee_id}[/cyan], Name: [green]{emp.first_name} "
+                              f"{emp.last_name}[/green]")
 
             support_contact_id = Prompt.ask(
                 "[bold yellow]Enter the ID of the new support contact[/bold yellow]")
@@ -225,7 +241,8 @@ def update_event(event_id):
                 employee_id=support_contact_id).first()
             if not support_contact:
                 console.print(
-                    Panel("[bold red]Support contact not found.[/bold red]", box=box.ROUNDED))
+                    Panel("[bold red]Support contact not found.[/bold red]",
+                          box=box.ROUNDED))
                 return
 
             event.support_contact = support_contact
@@ -241,7 +258,8 @@ def update_event(event_id):
 
             session.commit()
             console.print(
-                Panel("[bold green]Event updated successfully![/bold green]", box=box.ROUNDED))
+                Panel("[bold green]Event updated successfully![/bold green]",
+                      box=box.ROUNDED))
         except ValueError as ve:
             console.print(
                 Panel(f"[bold red]Error: {ve}[/bold red]", box=box.ROUNDED))

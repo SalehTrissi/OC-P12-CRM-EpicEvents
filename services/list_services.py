@@ -53,7 +53,8 @@ def list_clients():
 
 def list_contracts():
     """
-    Lists all contracts with proper error handling and displays them in a detailed table.
+    Lists all contracts with proper error handling and
+    displays them in a detailed table.
     """
     try:
         contracts = get_all_contracts()
@@ -86,7 +87,9 @@ def list_contracts():
                     f"{contract.client.email} \n {contract.client.phone_number}",
                     f"{contract.total_amount:.2f}€",
                     f"{contract.remaining_amount:.2f}€",
-                    "[bold green]Signed[/bold green]" if contract.is_signed else "[bold red]Unsigned[/bold red]",
+                    "[bold green]Signed[/bold green]"
+                    if contract.is_signed
+                    else "[bold red]Unsigned[/bold red]",
                     contract.date_created.strftime("%d-%m-%Y %H:%M:%S"),
                     f"{contract.sales_contact.first_name} {
                         contract.sales_contact.last_name}"

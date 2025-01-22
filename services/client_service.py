@@ -19,12 +19,14 @@ def create_client():
     current_user = get_current_user()
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to create a client.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You must be authenticated to create a client.[/bold red]",
+                  box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'create_client'):
         console.print(
-            Panel("[bold red]You do not have permission to create a client.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You do not have permission to create a client.[/bold red]",
+                  box=box.ROUNDED))
         return
 
     console.print(Panel("[bold cyan]Create New Client[/bold cyan]",
@@ -50,12 +52,13 @@ def create_client():
         try:
             session.commit()
             console.print(
-                Panel(f"[bold green]Client '{full_name}' created successfully![/bold green]",
-                      box=box.ROUNDED))
+                Panel(f"[bold green]Client '{full_name}'"
+                      " created successfully![/bold green]", box=box.ROUNDED))
         except IntegrityError:
             session.rollback()
             console.print(Panel(
-                "[bold red]Error: A client with this email already exists.[/bold red]", box=box.ROUNDED))
+                "[bold red]Error: A client with this email already exists.[/bold red]",
+                box=box.ROUNDED))
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error creating client: {
@@ -64,12 +67,13 @@ def create_client():
 
 def update_client(client_id):
     """
-    Updates a client's information with a user-friendly and visually appealing interface.
+    Updates a client's information with a user-friendly and visually appealing interface
     """
     current_user = get_current_user()
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to update a client.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You must be authenticated to update a client.[/bold red]",
+                  box=box.ROUNDED))
         return
 
     with SessionLocal as session:
@@ -81,7 +85,8 @@ def update_client(client_id):
 
         if not has_permission(current_user, 'update_client'):
             console.print(
-                Panel("[bold red]You do not have permission to update this client.[/bold red]", box=box.ROUNDED))
+                Panel("[bold red]You do not have permission to update this client."
+                      "[/bold red]", box=box.ROUNDED))
             return
 
         console.print(Panel(f"[bold cyan]Update Client: {client.full_name}[/bold cyan]",
@@ -126,12 +131,14 @@ def update_client(client_id):
         try:
             session.commit()
             console.print(
-                Panel(f"[bold green]Client '{full_name}' updated successfully![/bold green]",
+                Panel(f"[bold green]Client '{full_name}'"
+                      "updated successfully![/bold green]",
                       box=box.ROUNDED))
         except IntegrityError:
             session.rollback()
             console.print(Panel(
-                "[bold red]Error: A client with this email already exists.[/bold red]", box=box.ROUNDED))
+                "[bold red]Error: A client with this email already exists.[/bold red]",
+                box=box.ROUNDED))
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error updating client: {

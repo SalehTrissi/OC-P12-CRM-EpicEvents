@@ -9,8 +9,8 @@ from auth import get_current_user
 
 def get_all_clients():
     """
-    Retrieves all clients if the user is authenticated and has the necessary permissions.
-    Includes sales contact details using `joinedload`.
+    Retrieves all clients if the user is authenticated and has the necessary
+    permissions. Includes sales contact details using `joinedload`.
     """
     user = get_current_user()
     if not user:
@@ -27,8 +27,8 @@ def get_all_clients():
 
 def get_all_contracts():
     """
-    Retrieves all contracts if the user is authenticated and has the necessary permissions.
-    Includes client and sales contact details using `joinedload`.
+    Retrieves all clients if the user is authenticated and has the necessary
+    permissions. Includes sales contact details using `joinedload`.
     """
     user = get_current_user()
     if not user:

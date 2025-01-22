@@ -23,8 +23,9 @@ def cli():
 @cli.command(name="menu")
 def menu_command():
     """Display a menu of available commands."""
-    console.print(Panel("[bold cyan]Welcome to Epic Events CRM Command Menu[/bold cyan]",
-                        box=box.ROUNDED, style="bold green"))
+    console.print(Panel(
+        "[bold cyan]Welcome to Epic Events CRM Command Menu[/bold cyan]",
+        box=box.ROUNDED, style="bold green"))
     table = Table(title="[bold magenta]Available Commands[/bold magenta]",
                   box=box.ROUNDED, header_style="bold white")
     table.add_column("Command", justify="left", style="cyan")

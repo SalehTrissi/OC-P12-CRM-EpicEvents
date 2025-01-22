@@ -139,17 +139,20 @@ def login():
     if token:
         save_token(token)
         console.print(
-            Panel(":white_check_mark: [bold green]Authentication successful![/bold green]\n"
+            Panel(":white_check_mark:"
+                  " [bold green]Authentication successful![/bold green]\n"
                   "Welcome back, [bold yellow]{}[/bold yellow]!".format(email),
                   box=box.DOUBLE, style="green", expand=False))
     else:
         console.print(
-            Panel(":x: [bold red]Authentication failed! Please check your credentials.[/bold red]",
+            Panel(":x: [bold red]Authentication failed!"
+                  " Please check your credentials.[/bold red]",
                   box=box.DOUBLE, style="red", expand=False))
 
         # Suggest retrying
         retry_prompt = Prompt.ask(
-            "[bold yellow]Would you like to try again? (yes/no)[/bold yellow]", default="yes")
+            "[bold yellow]Would you like to try again?"
+            " (yes/no)[/bold yellow]", default="yes")
         if retry_prompt.strip().lower() == "yes":
             console.print("\n[bold green]Let's try again![/bold green]")
             login()

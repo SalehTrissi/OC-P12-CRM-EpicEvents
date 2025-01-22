@@ -20,12 +20,14 @@ def create_contract():
     current_user = get_current_user()
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to create a contract.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You must be authenticated to create a contract."
+                  "[/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'create_contract'):
         console.print(
-            Panel("[bold red]You do not have permission to create a contract.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You do not have permission to create a contract."
+                  "[/bold red]", box=box.ROUNDED))
         return
 
     console.print(Panel("[bold cyan]Create New Contract[/bold cyan]",
@@ -67,12 +69,13 @@ def create_contract():
             return
 
         if remaining_amount > total_amount:
-            console.print(Panel("[bold red]The remaining amount cannot be greater than the total amount.[/bold red]",
-                                box=box.ROUNDED))
+            console.print(Panel("[bold red]The remaining amount cannot be greater"
+                                " than the total amount.[/bold red]", box=box.ROUNDED))
             return
 
         is_signed_input = Prompt.ask(
-            "[bold yellow]Is the contract signed? (Y/N)[/bold yellow]", default="N").upper()
+            "[bold yellow]Is the contract signed? (Y/N)[/bold yellow]",
+            default="N").upper()
         is_signed = is_signed_input == "Y"
 
         # Create contract
@@ -89,7 +92,8 @@ def create_contract():
         try:
             session.commit()
             console.print(
-                Panel("[bold green]Contract created successfully![/bold green]", box=box.ROUNDED))
+                Panel("[bold green]Contract created successfully![/bold green]",
+                      box=box.ROUNDED))
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error creating contract: {
@@ -103,12 +107,14 @@ def update_contract(contract_id):
     current_user = get_current_user()
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to update a contract.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You must be authenticated to update a contract."
+                  "[/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'modify_contract'):
         console.print(
-            Panel("[bold red]You do not have permission to modify a contract.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You do not have permission to modify a contract."
+                  "[/bold red]", box=box.ROUNDED))
         return
 
     with SessionLocal as session:
@@ -125,8 +131,8 @@ def update_contract(contract_id):
                 Panel("[bold red]Contract not found.[/bold red]", box=box.ROUNDED))
             return
 
-        console.print(Panel(f"[bold cyan]Update Contract: {contract.contract_id}[/bold cyan]",
-                            box=box.ROUNDED, style="bold green"))
+        console.print(Panel(f"[bold cyan]Update Contract: {contract.contract_id}"
+                            "[/bold cyan]", box=box.ROUNDED, style="bold green"))
 
         console.print(
             "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n")
@@ -162,8 +168,8 @@ def update_contract(contract_id):
             return
 
         if remaining_amount > total_amount:
-            console.print(Panel("[bold red]The remaining amount cannot be greater than the total amount.[/bold red]",
-                                box=box.ROUNDED))
+            console.print(Panel("[bold red]The remaining amount cannot be greater"
+                                " than the total amount.[/bold red]", box=box.ROUNDED))
             return
 
         is_signed_input = Prompt.ask(
@@ -183,7 +189,8 @@ def update_contract(contract_id):
         try:
             session.commit()
             console.print(
-                Panel("[bold green]Contract updated successfully![/bold green]", box=box.ROUNDED))
+                Panel("[bold green]Contract updated successfully!"
+                      "[/bold green]", box=box.ROUNDED))
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error updating contract: {

@@ -19,12 +19,14 @@ def create_employee():
     current_user = get_current_user()
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to create an employee.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You must be authenticated to create an employee."
+                  " [/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'manage_users'):
         console.print(
-            Panel("[bold red]You do not have permission to create an employee.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You do not have permission to create an employee."
+                  "[/bold red]", box=box.ROUNDED))
         return
 
     console.print(Panel("[bold cyan]Create New Employee[/bold cyan]",
@@ -36,7 +38,7 @@ def create_employee():
     email = Prompt.ask("[bold yellow]Enter email address[/bold yellow]")
     phone_number = Prompt.ask("[bold yellow]Enter phone number[/bold yellow]")
     department_input = Prompt.ask(
-        "[bold yellow]Select department (COMMERCIAL, SUPPORT, MANAGEMENT)[/bold yellow]",
+        "[bold yellow]Select department(COMMERCIAL, SUPPORT, MANAGEMENT)[/bold yellow]",
         choices=["COMMERCIAL", "SUPPORT", "MANAGEMENT"],
         default="COMMERCIAL"
     ).upper()
@@ -62,12 +64,13 @@ def create_employee():
         try:
             session.commit()
             console.print(
-                Panel(f"[bold green]Employee '{first_name} {last_name}' created successfully![/bold green]",
-                      box=box.ROUNDED))
+                Panel(f"[bold green]Employee '{first_name} {last_name}'"
+                      " created successfully![/bold green]", box=box.ROUNDED))
         except IntegrityError:
             session.rollback()
             console.print(Panel(
-                "[bold red]Error: An employee with this email already exists.[/bold red]", box=box.ROUNDED))
+                "[bold red]Error: An employee with this email already exists."
+                "[/bold red]", box=box.ROUNDED))
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error creating employee: {
@@ -76,17 +79,20 @@ def create_employee():
 
 def update_employee(employee_id):
     """
-    Updates an employee's information with a user-friendly and visually appealing interface.
+    Updates an employee's information with a user-friendly and
+    visually appealing interface.
     """
     current_user = get_current_user()
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to update an employee.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You must be authenticated to update an employee."
+                  "[/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, 'manage_users'):
         console.print(
-            Panel("[bold red]You do not have permission to update an employee.[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]You do not have permission to update an employee."
+                  "[/bold red]", box=box.ROUNDED))
         return
 
     with SessionLocal as session:
@@ -96,8 +102,9 @@ def update_employee(employee_id):
                 Panel("[bold red]Employee not found.[/bold red]", box=box.ROUNDED))
             return
 
-        console.print(Panel(f"[bold cyan]Update Employee: {employee.first_name} {employee.last_name}[/bold cyan]",
-                            box=box.ROUNDED, style="bold green"))
+        console.print(Panel(f"[bold cyan]Update Employee:"
+                            f" {employee.first_name} {employee.last_name}"
+                            "[/bold cyan]", box=box.ROUNDED, style="bold green"))
 
         console.print(
             "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n")
@@ -161,12 +168,13 @@ def update_employee(employee_id):
         try:
             session.commit()
             console.print(
-                Panel(f"[bold green]Employee '{first_name} {last_name}' updated successfully![/bold green]",
-                      box=box.ROUNDED))
+                Panel(f"[bold green]Employee '{first_name} {last_name}'"
+                      " updated successfully![/bold green]", box=box.ROUNDED))
         except IntegrityError:
             session.rollback()
             console.print(Panel(
-                "[bold red]Error: An employee with this email already exists.[/bold red]", box=box.ROUNDED))
+                "[bold red]Error: An employee with this email already exists."
+                "[/bold red]", box=box.ROUNDED))
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error updating employee: {

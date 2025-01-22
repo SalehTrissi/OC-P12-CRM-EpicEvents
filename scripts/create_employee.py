@@ -39,7 +39,8 @@ def create_employee_interactive():
     # Verify department
     if department_input not in DepartmentEnum.__members__:
         console.print(
-            Panel("[bold red]Invalid department. Please choose from COMMERCIAL, SUPPORT, or MANAGEMENT.[/bold red]",
+            Panel("[bold red]Invalid department."
+                  " Please choose from COMMERCIAL, SUPPORT, or MANAGEMENT.[/bold red]",
                   box=box.ROUNDED)
         )
         return
@@ -69,7 +70,8 @@ def create_employee_interactive():
             session.rollback()
             console.print(
                 Panel(
-                    "[bold red]Error: An employee with this email already exists.[/bold red]", box=box.ROUNDED)
+                    "[bold red]Error: An employee with this email already exists."
+                    "[/bold red]", box=box.ROUNDED)
             )
         except Exception as e:
             session.rollback()
