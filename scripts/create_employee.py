@@ -6,6 +6,7 @@ from rich.prompt import Prompt
 from rich.panel import Panel
 from getpass import getpass
 from rich import box
+import sentry_sdk
 
 console = Console()
 
@@ -29,6 +30,7 @@ def create_employee_interactive():
     """
     Interactive script to create a new employee with a user-friendly interface.
     """
+    # Display the interface for creating a new employee
     console.print(
         Panel(
             "[bold cyan]Create a New Employee[/bold cyan]",
@@ -50,6 +52,7 @@ def create_employee_interactive():
             default="COMMERCIAL"
         ).strip().upper()
 
+        # Validate the department input
         if department_input in DepartmentEnum.__members__:
             break
         console.print(
@@ -62,8 +65,8 @@ def create_employee_interactive():
     password = getpass("Password: ").strip()
     if not password:
         console.print(
-            "[bold red]Password cannot be empty."
-            " Please provide a valid password.[/bold red]")
+            "[bold red]Password cannot be empty. "
+            "Please provide a valid password.[/bold red]")
         return
 
     # Create the Employee object
@@ -75,6 +78,7 @@ def create_employee_interactive():
             phone_number=phone_number,
             department=DepartmentEnum[department_input]
         )
+        # Set hashed password
         employee.set_password(password)
 
         # Save the employee to the database
@@ -82,28 +86,45 @@ def create_employee_interactive():
         try:
             session.add(employee)
             session.commit()
+
+            # Display success message to the console
             console.print(
                 Panel("[bold green]Employee created successfully![/bold green]",
                       box=box.ROUNDED)
             )
+            # Log success message to Sentry
+            sentry_sdk.capture_message(
+                f"Employee '{first_name} {last_name}' created successfully!",
+                level="info"
+            )
         except IntegrityError:
+            # Handle duplicate email error
             session.rollback()
             console.print(
                 Panel("[bold red]Error: An employee with this email already exists."
                       "[/bold red]", box=box.ROUNDED)
             )
+            # Log the error to Sentry
+            sentry_sdk.capture_exception(IntegrityError("Duplicate email"))
         except Exception as e:
+            # Handle unexpected exceptions
             session.rollback()
             console.print(
                 Panel(f"[bold red]An unexpected error occurred: {
                       e}[/bold red]", box=box.ROUNDED)
             )
+            # Log the unexpected exception to Sentry
+            sentry_sdk.capture_exception(e)
         finally:
+            # Close the database session
             session.close()
     except ValueError as e:
+        # Handle invalid user input
         console.print(
             Panel(f"[bold red]Error: {e}[/bold red]", box=box.ROUNDED)
         )
+        # Log the error to Sentry
+        sentry_sdk.capture_exception(e)
 
 
 # Run the script interactively
