@@ -27,7 +27,9 @@ if SENTRY_DSN:
         # of transactions for tracing.
         integrations=[SqlalchemyIntegration()],
         traces_sample_rate=1.0,
-        send_default_pii=True
+        profiles_sample_rate=1.0,
+        send_default_pii=True,
+        debug=False
     )
 else:
     print("SENTRY_DSN n'est pas défini. Sentry ne sera pas initialisé.")
