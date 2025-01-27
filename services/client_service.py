@@ -7,7 +7,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.panel import Panel
 from rich import box
-
+import sentry_sdk
 
 console = Console()
 
@@ -52,17 +52,27 @@ def create_client():
         try:
             session.commit()
             console.print(
-                Panel(f"[bold green]Client '{full_name}'"
-                      " created successfully![/bold green]", box=box.ROUNDED))
+                Panel(f"[bold green]Client '{full_name}' created successfully![/bold green]",
+                      box=box.ROUNDED)
+            )
+            # Log success message to Sentry
+            sentry_sdk.capture_message(
+                f"Client '{full_name}' created successfully!",
+                level="info"
+            )
         except IntegrityError:
             session.rollback()
             console.print(Panel(
                 "[bold red]Error: A client with this email already exists.[/bold red]",
                 box=box.ROUNDED))
+            # Log IntegrityError to Sentry
+            sentry_sdk.capture_exception(IntegrityError("Duplicate email"))
         except Exception as e:
             session.rollback()
-            console.print(Panel(f"[bold red]Error creating client: {
-                          e}[/bold red]", box=box.ROUNDED))
+            console.print(Panel(f"[bold red]Error creating client: {e}[/bold red]",
+                                box=box.ROUNDED))
+            # Log unexpected exception to Sentry
+            sentry_sdk.capture_exception(e)
 
 
 def update_client(client_id):
@@ -131,15 +141,23 @@ def update_client(client_id):
         try:
             session.commit()
             console.print(
-                Panel(f"[bold green]Client '{full_name}'"
-                      "updated successfully![/bold green]",
+                Panel(f"[bold green]Client '{full_name}' updated successfully![/bold green]",
                       box=box.ROUNDED))
+            # Log success message to Sentry
+            sentry_sdk.capture_message(
+                f"Client '{full_name}' updated successfully!",
+                level="info"
+            )
         except IntegrityError:
             session.rollback()
             console.print(Panel(
                 "[bold red]Error: A client with this email already exists.[/bold red]",
                 box=box.ROUNDED))
+            # Log IntegrityError to Sentry
+            sentry_sdk.capture_exception(IntegrityError("Duplicate email"))
         except Exception as e:
             session.rollback()
-            console.print(Panel(f"[bold red]Error updating client: {
-                          e}[/bold red]", box=box.ROUNDED))
+            console.print(Panel(f"[bold red]Error updating client: {e}[/bold red]",
+                                box=box.ROUNDED))
+            # Log unexpected exception to Sentry
+            sentry_sdk.capture_exception(e)

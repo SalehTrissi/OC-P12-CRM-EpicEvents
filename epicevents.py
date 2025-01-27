@@ -7,6 +7,7 @@ from services.event_service import create_event, update_event
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+import config  # noqa: F401
 from rich import box
 import click
 
