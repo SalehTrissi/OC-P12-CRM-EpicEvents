@@ -3,11 +3,13 @@ from EpicEventsCRM.utils.permissions import has_permission
 from sqlalchemy.exc import IntegrityError
 from db.database import SessionLocal
 from auth import get_current_user
-from getpass import getpass
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.panel import Panel
+from getpass import getpass
 from rich import box
+import sentry_sdk
+
 
 console = Console()
 
@@ -66,15 +68,20 @@ def create_employee():
             console.print(
                 Panel(f"[bold green]Employee '{first_name} {last_name}'"
                       " created successfully![/bold green]", box=box.ROUNDED))
-        except IntegrityError:
+            sentry_sdk.capture_message(
+                f"Employee '{first_name} {last_name}' created successfully!", level="info"
+            )
+        except IntegrityError as e:
             session.rollback()
             console.print(Panel(
                 "[bold red]Error: An employee with this email already exists."
                 "[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(e)
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error creating employee: {
                           e}[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(e)
 
 
 def update_employee(employee_id):
@@ -100,6 +107,8 @@ def update_employee(employee_id):
         if not employee:
             console.print(
                 Panel("[bold red]Employee not found.[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_message(
+                f"Employee with ID '{employee_id}' not found.", level="warning")
             return
 
         console.print(Panel(f"[bold cyan]Update Employee:"
@@ -170,12 +179,17 @@ def update_employee(employee_id):
             console.print(
                 Panel(f"[bold green]Employee '{first_name} {last_name}'"
                       " updated successfully![/bold green]", box=box.ROUNDED))
-        except IntegrityError:
+            sentry_sdk.capture_message(
+                f"Employee '{first_name} {last_name}' updated successfully!", level="info"
+            )
+        except IntegrityError as e:
             session.rollback()
             console.print(Panel(
                 "[bold red]Error: An employee with this email already exists."
                 "[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(e)
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error updating employee: {
                           e}[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(e)
