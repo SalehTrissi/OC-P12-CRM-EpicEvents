@@ -99,7 +99,8 @@ def create_event():
             support_contact_id = Prompt.ask(
                 "[bold yellow]ID of the support employee to assign[/bold yellow]")
             support_contact = session.query(Employee).filter_by(
-                employee_id=support_contact_id, department=DepartmentEnum.SUPPORT).first()
+                employee_id=support_contact_id, department=DepartmentEnum.SUPPORT
+            ).first()
             if not support_contact:
                 console.print(
                     Panel("[bold red]Support employee not found.[/bold red]",
@@ -179,8 +180,8 @@ def update_event(event_id):
                     Panel("[bold red]Event not found.[/bold red]", box=box.ROUNDED))
                 return
 
-            console.print(Panel(f"[bold cyan]Update Event: {event.event_name}[/bold cyan]",
-                                box=box.ROUNDED, style="bold green"))
+            console.print(Panel(f"[bold cyan]Update Event: {event.event_name}"
+                                "[/bold cyan]", box=box.ROUNDED, style="bold green"))
             console.print(
                 "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n")
 
@@ -247,7 +248,8 @@ def update_event(event_id):
                         emp.first_name} {emp.last_name}[/green]")
 
                 support_contact_id = Prompt.ask(
-                    "[bold yellow]Enter the ID of the new support contact[/bold yellow]")
+                    "[bold yellow]Enter the ID of the new support contact[/bold yellow]"
+                )
                 support_contact = session.query(Employee).filter_by(
                     employee_id=support_contact_id).first()
                 if not support_contact:

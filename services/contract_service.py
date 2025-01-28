@@ -78,7 +78,8 @@ def create_contract():
             console.print(Panel("[bold red]The remaining amount cannot be greater"
                                 " than the total amount.[/bold red]", box=box.ROUNDED))
             sentry_sdk.capture_message(
-                "Remaining amount cannot be greater than total amount.", level="warning")
+                "Remaining amount cannot be greater than total amount.",
+                level="warning")
             return
 
         is_signed_input = Prompt.ask(
@@ -189,7 +190,8 @@ def update_contract(contract_id):
             console.print(Panel("[bold red]The remaining amount cannot be greater"
                                 " than the total amount.[/bold red]", box=box.ROUNDED))
             sentry_sdk.capture_message(
-                "Remaining amount cannot be greater than total amount.", level="warning")
+                "Remaining amount cannot be greater than total amount.",
+                level="warning")
             return
 
         is_signed_input = Prompt.ask(

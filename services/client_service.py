@@ -52,8 +52,8 @@ def create_client():
         try:
             session.commit()
             console.print(
-                Panel(f"[bold green]Client '{full_name}' created successfully![/bold green]",
-                      box=box.ROUNDED)
+                Panel(f"[bold green]Client '{full_name}' created successfully!"
+                      "[/bold green]", box=box.ROUNDED)
             )
             # Log success message to Sentry
             sentry_sdk.capture_message(
@@ -141,8 +141,8 @@ def update_client(client_id):
         try:
             session.commit()
             console.print(
-                Panel(f"[bold green]Client '{full_name}' updated successfully![/bold green]",
-                      box=box.ROUNDED))
+                Panel(f"[bold green]Client '{full_name}' updated successfully!"
+                      "[/bold green]", box=box.ROUNDED))
             # Log success message to Sentry
             sentry_sdk.capture_message(
                 f"Client '{full_name}' updated successfully!",

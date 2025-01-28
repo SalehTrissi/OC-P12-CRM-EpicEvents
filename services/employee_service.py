@@ -69,7 +69,8 @@ def create_employee():
                 Panel(f"[bold green]Employee '{first_name} {last_name}'"
                       " created successfully![/bold green]", box=box.ROUNDED))
             sentry_sdk.capture_message(
-                f"Employee '{first_name} {last_name}' created successfully!", level="info"
+                f"Employee '{first_name} {last_name}' created successfully!",
+                level="info"
             )
         except IntegrityError as e:
             session.rollback()
@@ -180,7 +181,8 @@ def update_employee(employee_id):
                 Panel(f"[bold green]Employee '{first_name} {last_name}'"
                       " updated successfully![/bold green]", box=box.ROUNDED))
             sentry_sdk.capture_message(
-                f"Employee '{first_name} {last_name}' updated successfully!", level="info"
+                f"Employee '{first_name} {last_name}' updated successfully!",
+                level="info"
             )
         except IntegrityError as e:
             session.rollback()
