@@ -1,5 +1,5 @@
-from EpicEventsCRM.utils.permissions import has_permission
 from EpicEventsCRM.utils.validators import validate_positive_amount
+from EpicEventsCRM.utils.permissions import has_permission
 from EpicEventsCRM.models.contract_model import Contract
 from EpicEventsCRM.models.client_model import Client
 from db.database import SessionLocal
@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.panel import Panel
 from rich import box
+import sentry_sdk
 
 
 console = Console()
@@ -37,8 +38,9 @@ def create_contract():
     client_id_input = Prompt.ask("[bold yellow]Enter Client ID[/bold yellow]")
     try:
         client_id = int(client_id_input)
-    except ValueError:
+    except ValueError as e:
         console.print(Panel("[bold red]Invalid Client ID.[/bold red]", box=box.ROUNDED))
+        sentry_sdk.capture_exception(e)
         return
 
     with SessionLocal as session:
@@ -46,6 +48,8 @@ def create_contract():
         if not client:
             console.print(
                 Panel("[bold red]Client not found.[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_message(
+                f"Client with ID {client_id} not found.", level="error")
             return
 
         # Collect contract information
@@ -56,6 +60,7 @@ def create_contract():
         except ValueError as ve:
             console.print(Panel(f"[bold red]Validation error: {
                           ve}[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(ve)
             return
 
         try:
@@ -66,11 +71,14 @@ def create_contract():
         except ValueError as ve:
             console.print(Panel(f"[bold red]Validation error: {
                           ve}[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(ve)
             return
 
         if remaining_amount > total_amount:
             console.print(Panel("[bold red]The remaining amount cannot be greater"
                                 " than the total amount.[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_message(
+                "Remaining amount cannot be greater than total amount.", level="warning")
             return
 
         is_signed_input = Prompt.ask(
@@ -94,10 +102,15 @@ def create_contract():
             console.print(
                 Panel("[bold green]Contract created successfully![/bold green]",
                       box=box.ROUNDED))
+            sentry_sdk.capture_message(
+                f"Contract for Client ID {client_id} created successfully.",
+                level="info"
+            )
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error creating contract: {
                           e}[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(e)
 
 
 def update_contract(contract_id):
@@ -120,15 +133,18 @@ def update_contract(contract_id):
     with SessionLocal as session:
         try:
             contract_id = int(contract_id)
-        except ValueError:
+        except ValueError as e:
             console.print(
                 Panel("[bold red]Invalid Contract ID.[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(e)
             return
 
         contract = session.query(Contract).filter_by(contract_id=contract_id).first()
         if not contract:
             console.print(
                 Panel("[bold red]Contract not found.[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_message(
+                f"Contract with ID {contract_id} not found.", level="error")
             return
 
         console.print(Panel(f"[bold cyan]Update Contract: {contract.contract_id}"
@@ -150,6 +166,7 @@ def update_contract(contract_id):
         except ValueError as ve:
             console.print(Panel(f"[bold red]Validation error: {
                           ve}[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(ve)
             return
 
         remaining_amount_input = Prompt.ask(
@@ -165,11 +182,14 @@ def update_contract(contract_id):
         except ValueError as ve:
             console.print(Panel(f"[bold red]Validation error: {
                           ve}[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(ve)
             return
 
         if remaining_amount > total_amount:
             console.print(Panel("[bold red]The remaining amount cannot be greater"
                                 " than the total amount.[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_message(
+                "Remaining amount cannot be greater than total amount.", level="warning")
             return
 
         is_signed_input = Prompt.ask(
@@ -191,7 +211,11 @@ def update_contract(contract_id):
             console.print(
                 Panel("[bold green]Contract updated successfully!"
                       "[/bold green]", box=box.ROUNDED))
+            sentry_sdk.capture_message(
+                f"Contract ID {contract_id} updated successfully.", level="info"
+            )
         except Exception as e:
             session.rollback()
             console.print(Panel(f"[bold red]Error updating contract: {
                           e}[/bold red]", box=box.ROUNDED))
+            sentry_sdk.capture_exception(e)
