@@ -121,7 +121,7 @@ def login():
     Handles the user login process with a stylish and professional interface.
     """
     console.print(Panel("[bold cyan]Welcome to Epic Events CRM Login[/bold cyan]",
-                        box=box.ROUNDED, style="bold green", expand=False))
+                        box=box.ROUNDED, style="bold green", expand=False), justify="center")
 
     email = Prompt.ask("[bold yellow]Enter your Email[/bold yellow]").strip().lower()
 
