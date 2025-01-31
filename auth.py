@@ -168,16 +168,23 @@ def logout():
         # Simulate logout process
         delete_token()
         console.print(
-            Panel(":wave: [bold cyan]You are successfully logged out.[/bold cyan]\n"
-                  "See you next time!",
-                  box=box.ROUNDED, style="bold green", expand=False)
+            Panel(
+                ":wave: [bold cyan]You have successfully logged out![/bold cyan]\n"
+                "[bold green]Thank you for using Epic Events CRM.[/bold green]\n"
+                "[dim]See you next time![/dim]",
+                box=box.ROUNDED, style="bold green", expand=False
+            )
         )
+        return
     else:
         console.print(
-            Panel(":warning: [bold yellow]You are already logged out![/bold yellow]\n"
-                  "No active session found.",
-                  box=box.ROUNDED, style="yellow", expand=False)
+            Panel(
+                ":warning: [bold yellow]You are already logged out![/bold yellow]\n"
+                "[dim]No active session was found.[/dim]",
+                box=box.ROUNDED, style="yellow", expand=False
+            )
         )
+        return
 
 
 def status():

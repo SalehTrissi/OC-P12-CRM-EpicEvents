@@ -16,7 +16,7 @@ def get_all_clients():
     if not user:
         raise PermissionError("Authentication required. Please login.")
 
-    if not has_permission(user, 'read_clients'):
+    if not has_permission(user, 'list_clients'):
         raise PermissionError("You do not have permission to view clients.")
 
     with SessionLocal as session:
@@ -34,7 +34,7 @@ def get_all_contracts():
     if not user:
         raise PermissionError("Authentication required. Please login.")
 
-    if not has_permission(user, 'read_contracts'):
+    if not has_permission(user, 'list_contracts'):
         raise PermissionError("You do not have permission to view contracts.")
 
     with SessionLocal as session:
@@ -53,7 +53,7 @@ def get_all_events():
     if not user:
         raise PermissionError("Authentication required. Please login.")
 
-    if not has_permission(user, 'read_events'):
+    if not has_permission(user, 'list_events'):
         raise PermissionError("You do not have permission to view events.")
 
     with SessionLocal as session:

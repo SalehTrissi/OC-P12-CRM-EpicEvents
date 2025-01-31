@@ -1,150 +1,159 @@
+import os
+import click
+from rich.console import Console
 from auth import login as auth_login, logout as auth_logout, status as auth_status
 from services.list_services import list_clients, list_contracts, list_events
 from services.employee_service import create_employee, update_employee
 from services.contract_service import create_contract, update_contract
 from services.client_service import create_client, update_client
 from services.event_service import create_event, update_event
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-import config  # noqa: F401
-from rich import box
-import click
-
+from EpicEventsCRM.controllers.general_commands import help_command
+from EpicEventsCRM.controllers.menus import display_menu
 
 console = Console()
 
 
 @click.group()
 def cli():
-    """Epic Events CRM"""
+    """Epic Events CRM Command Line Interface."""
     pass
 
 
 @cli.command(name="menu")
 def menu_command():
-    """Display a menu of available commands."""
-    console.print(Panel(
-        "[bold cyan]Welcome to Epic Events CRM Command Menu[/bold cyan]",
-        box=box.ROUNDED, style="bold green"))
-    table = Table(title="[bold magenta]Available Commands[/bold magenta]",
-                  box=box.ROUNDED, header_style="bold white")
-    table.add_column("Command", justify="left", style="cyan")
-    table.add_column("Description", justify="left", style="green")
+    """
+    Display an interactive menu of available commands.
+    This will keep displaying the menu until the user chooses to exit (0).
+    """
+    while True:
+        # Show the menu and get the chosen command
+        command = display_menu()
 
-    # List of commands and their descriptions
-    commands = [
-        ("menu", "Display this menu."),
-        ("login", "Log in to the system."),
-        ("logout", "Log out of the system."),
-        ("status", "Display the current login status."),
-        ("list-clients", "List all clients."),
-        ("list-contracts", "List all contracts."),
-        ("list-events", "List all events."),
-        ("create-employee", "Create a new employee."),
-        ("update-employee <employee_id>", "Update an existing employee."),
-        ("create-client", "Create a new client."),
-        ("update-client <client_id>", "Update an existing client."),
-        ("create-contract", "Create a new contract."),
-        ("update-contract <contract_id>", "Update an existing contract."),
-        ("create-event", "Create a new event."),
-        ("update-event <event_id>", "Update an existing event."),
-        ("--help", "Display the help for a specific command."),
-    ]
+        # If command is None, user chose 0 => exit and break the loop
+        if command is None:
+            console.print("[bold red]👋 Exiting menu... Goodbye![/bold red]")
+            return  # Use return instead of break to prevent looping back to menu
 
-    # Populate table with commands
-    for command, description in commands:
-        table.add_row(f"[bold cyan]{command}[/bold cyan]", description)
+        # If the user chose 'menu', prevent unnecessary re-execution
+        if command == "menu":
+            console.print(
+                "[bold yellow]You are already in the main menu![/bold yellow]")
+            continue
 
-    console.print(table)
+        # Attempt to execute the chosen command
+        try:
+            cli.main(args=[command], standalone_mode=False)
+
+            # Only ask for ENTER if a real command was executed
+            if command not in ["menu", "logout", "exit"]:
+                console.input(
+                    "\n[bold cyan]Press ENTER to return to the menu...[/bold cyan]")
+
+        except Exception as e:
+            console.print(f"[bold red]Error executing command: {str(e)}[/bold red]")
 
 
 @cli.command(name="login")
 def login_command():
-    """Command log in"""
+    """Log in to the system."""
     auth_login()
+    cli.main(args=["menu"], standalone_mode=False)
 
 
 @cli.command(name="logout")
 def logout_command():
-    """Command log out"""
+    """Log out of the system."""
     auth_logout()
+
+    # Clear the screen before displaying the logout message
+    os.system("cls" if os.name == "nt" else "clear")
+
+    console.print("[bold cyan]You have been logged out successfully.[/bold cyan]")
+
+    # Instead of directly calling menu, exit completely
+    return
 
 
 @cli.command(name="status")
 def status_command():
-    """Command status"""
+    """Show the current login status."""
     auth_status()
 
 
 @cli.command(name="list-clients")
 def list_clients_command():
-    """Command to list all clients"""
+    """List all clients."""
     list_clients()
 
 
 @cli.command(name="list-contracts")
 def list_contracts_command():
-    """Command to list all contracts"""
+    """List all contracts."""
     list_contracts()
 
 
 @cli.command(name="list-events")
 def list_events_command():
-    """Command to list all events"""
+    """List all events."""
     list_events()
 
 
 @cli.command(name="create-employee")
 def create_employee_command():
-    """Create a new employee"""
+    """Create a new employee."""
     create_employee()
 
 
 @cli.command(name="update-employee")
 @click.argument("employee_id", type=int)
 def update_employee_command(employee_id):
-    """Update an existing employee"""
+    """Update an existing employee."""
     update_employee(employee_id)
 
 
 @cli.command(name="create-client")
 def create_client_command():
-    """Create a new client"""
+    """Create a new client."""
     create_client()
 
 
 @cli.command(name="update-client")
 @click.argument("client_id", type=int)
 def update_client_command(client_id):
-    """Update an existing client"""
+    """Update an existing client."""
     update_client(client_id)
 
 
 @cli.command(name="create-contract")
 def create_contract_command():
-    """Create a new contract"""
+    """Create a new contract."""
     create_contract()
 
 
 @cli.command(name="update-contract")
 @click.argument("contract_id", type=int)
 def update_contract_command(contract_id):
-    """Update an existing contract"""
+    """Update an existing contract."""
     update_contract(contract_id)
 
 
 @cli.command(name="create-event")
 def create_event_command():
-    """Create a new event"""
+    """Create a new event."""
     create_event()
 
 
 @cli.command(name="update-event")
 @click.argument("event_id", type=int)
 def update_event_command(event_id):
-    """Update an existing event"""
+    """Update an existing event."""
     update_event(event_id)
+
+
+@cli.command(name="help")
+def help_cli_command():
+    """Show help for all commands."""
+    help_command()
 
 
 if __name__ == "__main__":
