@@ -1,4 +1,5 @@
 import os
+import sys
 import click
 from rich.console import Console
 from auth import login as auth_login, logout as auth_logout, status as auth_status
@@ -32,7 +33,7 @@ def menu_command():
         # If command is None, user chose 0 => exit
         if command is None:
             console.print("[bold red]👋 Exiting menu... Goodbye![/bold red]")
-            return
+            sys.exit(0)
 
         # Execute the command unless it's "menu" (just redisplay the menu)
         if command != "menu":
