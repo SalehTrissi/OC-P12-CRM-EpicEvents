@@ -1,15 +1,21 @@
 from sqlalchemy.orm import joinedload
 from config import JWT_SECRET, JWT_ALGORITHM, JWT_EXP_DELTA_SECONDS
 from EpicEventsCRM.utils.permissions import has_permission
+from EpicEventsCRM.utils.validators import validate_email
 from EpicEventsCRM.models.employee_model import Employee
 from datetime import datetime, timedelta, timezone
 from db.database import SessionLocal
+
 from sqlalchemy.orm import Session
+from rich.progress import Progress
+
 from rich.console import Console
+
 from rich.prompt import Prompt
 from rich.panel import Panel
 from getpass import getpass
 from rich import box
+import time
 import jwt
 import os
 
@@ -120,44 +126,60 @@ def login():
     """
     Handles the user login process with a stylish and professional interface.
     """
-    console.print(Panel("[bold cyan]Welcome to Epic Events CRM Login[/bold cyan]",
-                        box=box.ROUNDED, style="bold green", expand=False), justify="center")
+    while True:
+        console.print(Panel("[bold cyan]Welcome to Epic Events CRM Login[/bold cyan]",
+                            box=box.ROUNDED, style="bold green", expand=False), justify="center")
 
-    email = Prompt.ask("[bold yellow]Enter your Email[/bold yellow]").strip().lower()
+        while True:
+            email = Prompt.ask(
+                "[bold yellow]Enter your Email[/bold yellow]").strip().lower()
+            if not email:
+                console.print(
+                    "[bold red]❌ Email cannot be empty! Please enter a valid email.[/bold red]")
+                continue
 
-    # Display the password prompt using Rich and pass a plain string to getpass
-    console.print("[bold yellow]Enter your Password:[/bold yellow]", end="")
-    password = getpass(" ")
+            try:
+                email = validate_email(email)
+                break
+            except ValueError as e:
+                console.print(f"[bold red]❌ {str(e)}[/bold red]")
 
-    # Simulate authentication process with a progress bar
-    console.print("\n[bold yellow]Authenticating...[/bold yellow]\n", style="dim")
+        console.print("[bold yellow]Enter your Password:[/bold yellow]", end=" ")
+        password = getpass("")
 
-    # Create a session to access the database
-    with SessionLocal as session:
-        token = authenticate(session, email, password)
+        with Progress() as progress:
+            task = progress.add_task("[cyan]Authenticating...", total=100)
+            for _ in range(10):
+                time.sleep(0.1)
+                progress.update(task, advance=10)
 
-    if token:
-        save_token(token)
-        console.print(
-            Panel(":white_check_mark:"
-                  " [bold green]Authentication successful![/bold green]\n"
-                  "Welcome back, [bold yellow]{}[/bold yellow]!".format(email),
-                  box=box.DOUBLE, style="green", expand=False))
-    else:
-        console.print(
-            Panel(":x: [bold red]Authentication failed!"
-                  " Please check your credentials.[/bold red]",
-                  box=box.DOUBLE, style="red", expand=False))
+        # Create a session to access the database
+        with SessionLocal as session:
+            token = authenticate(session, email, password)
 
-        # Suggest retrying
-        retry_prompt = Prompt.ask(
-            "[bold yellow]Would you like to try again?"
-            " (yes/no)[/bold yellow]", default="yes")
-        if retry_prompt.strip().lower() == "yes":
-            console.print("\n[bold green]Let's try again![/bold green]")
-            login()
+        if token:
+            save_token(token)
+            console.print(
+                Panel(":white_check_mark:"
+                      " [bold green]Authentication successful![/bold green]\n"
+                      "Welcome back, [bold yellow]{}[/bold yellow]!".format(email),
+                      box=box.DOUBLE, style="green", expand=False))
+            return
         else:
-            console.print("\n[bold red]Exiting... Have a great day![/bold red]")
+            console.print(
+                Panel(":x: [bold red]Authentication failed!"
+                      " Please check your credentials.[/bold red]",
+                      box=box.DOUBLE, style="red", expand=False))
+
+            # Suggest retrying
+            retry_prompt = Prompt.ask(
+                "[bold yellow]Would you like to try again? (yes/no)[/bold yellow]", default="yes")
+            if retry_prompt.strip().lower() == "yes":
+                console.print("\n[bold green]Let's try again![/bold green]")
+                continue
+            else:
+                console.print("\n[bold red]Exiting... Have a great day![/bold red]")
+                return
 
 
 def logout():
