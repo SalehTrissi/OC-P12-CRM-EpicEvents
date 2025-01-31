@@ -29,28 +29,22 @@ def menu_command():
         # Show the menu and get the chosen command
         command = display_menu()
 
-        # If command is None, user chose 0 => exit and break the loop
+        # If command is None, user chose 0 => exit
         if command is None:
             console.print("[bold red]👋 Exiting menu... Goodbye![/bold red]")
-            return  # Use return instead of break to prevent looping back to menu
+            return
 
-        # If the user chose 'menu', prevent unnecessary re-execution
-        if command == "menu":
-            console.print(
-                "[bold yellow]You are already in the main menu![/bold yellow]")
-            continue
+        # Execute the command unless it's "menu" (just redisplay the menu)
+        if command != "menu":
+            try:
+                cli.main(args=[command], standalone_mode=False)
 
-        # Attempt to execute the chosen command
-        try:
-            cli.main(args=[command], standalone_mode=False)
+                if command not in ["logout", "exit"]:
+                    console.input(
+                        "\n[bold cyan]Press ENTER to return to the menu...[/bold cyan]")
 
-            # Only ask for ENTER if a real command was executed
-            if command not in ["menu", "logout", "exit"]:
-                console.input(
-                    "\n[bold cyan]Press ENTER to return to the menu...[/bold cyan]")
-
-        except Exception as e:
-            console.print(f"[bold red]Error executing command: {str(e)}[/bold red]")
+            except Exception as e:
+                console.print(f"[bold red]Error executing command: {str(e)}[/bold red]")
 
 
 @cli.command(name="login")
