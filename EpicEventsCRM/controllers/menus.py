@@ -1,9 +1,10 @@
+from EpicEventsCRM.utils.permissions import get_available_commands
+from auth import get_current_user
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich import box
-from EpicEventsCRM.utils.permissions import get_available_commands
-from auth import get_current_user
+
 
 console = Console()
 
@@ -38,7 +39,7 @@ def display_menu():
             f"[bold green]({employee.department.value})[/bold green]",
             box=box.HEAVY,
             style="bold green",
-            expand=True
+            expand=True,
         )
         console.print(panel, justify="center")
 
@@ -53,7 +54,7 @@ def display_menu():
         title="[bold magenta]📜 Available Commands[/bold magenta]",
         box=box.SQUARE_DOUBLE_HEAD,
         header_style="bold magenta",
-        expand=True
+        expand=True,
     )
 
     table.add_column("📌 Number", justify="center", style="bold yellow", no_wrap=True)
@@ -62,20 +63,31 @@ def display_menu():
 
     commands_keys = list(commands_dict.keys())
     for idx, command in enumerate(commands_keys, start=1):
-        table.add_row(f"[bold yellow]{idx}[/bold yellow]", f"[bold cyan]{
-                      command}[/bold cyan]", f"[green]{commands_dict[command]}[/green]")
+        table.add_row(
+            f"[bold yellow]{idx}[/bold yellow]",
+            f"[bold cyan]{
+                command}[/bold cyan]",
+            f"[green]{commands_dict[command]}[/green]",
+        )
 
-    table.add_row("[bold yellow]0[/bold yellow]",
-                  "[bold red]Exit[/bold red]", "[bold red]Exit the menu.[/bold red]")
+    table.add_row(
+        "[bold yellow]0[/bold yellow]",
+        "[bold red]Exit[/bold red]",
+        "[bold red]Exit the menu.[/bold red]",
+    )
 
     console.print(table)
 
     try:
-        choice = int(console.input(
-            "\n[bold cyan]🎯 Select a command by number (or 0 to exit): [/bold cyan]"))
+        choice = int(
+            console.input(
+                "\n[bold cyan]🎯 Select a command by number (or 0 to exit): [/bold cyan]"
+            )
+        )
     except ValueError:
         console.print(
-            "[bold red]❌ Invalid input. Please enter a valid number.[/bold red]")
+            "[bold red]❌ Invalid input. Please enter a valid number.[/bold red]"
+        )
         return display_menu()
 
     return None if choice == 0 else commands_keys[choice - 1]
