@@ -3,17 +3,28 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
-# Load environment variables from .env
+# Load environment variables
 load_dotenv()
 
-# Retrieve the database URL
+# Retrieve database URL
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
-    raise ValueError("The DATABASE_URL environment variable is not defined.")
+    raise ValueError(
+        "❌ ERROR: The DATABASE_URL environment variable is not defined."
+        " Please check your .env file."
+    )
 
-# Create the SQLAlchemy engine
+# Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL, echo=False)
 
-# Create a session to manage transactions
+# Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-SessionLocal = SessionLocal()
+
+
+def get_db():
+    """Dependency for getting a new database session."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
