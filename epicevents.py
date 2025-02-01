@@ -42,7 +42,8 @@ def menu_command():
 
                 if command not in ["logout", "exit"]:
                     console.input(
-                        "\n[bold cyan]Press ENTER to return to the menu...[/bold cyan]")
+                        "\n[bold cyan]Press ENTER to return to the menu...[/bold cyan]"
+                    )
 
             except Exception as e:
                 console.print(f"[bold red]Error executing command: {str(e)}[/bold red]")
