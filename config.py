@@ -13,13 +13,13 @@ JWT_SECRET = os.getenv("JWT_SECRET")
 if not JWT_SECRET:
     raise ValueError("JWT_SECRET key is not defined in .env file")
 
-JWT_ALGORITHM = 'HS256'
+JWT_ALGORITHM = "HS256"
 # Token validity period (in seconds)
 JWT_EXP_DELTA_SECONDS = 3600
 
 
 # Configuration de Sentry
-SENTRY_DSN = os.getenv('SENTRY_DSN')
+SENTRY_DSN = os.getenv("SENTRY_DSN")
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
@@ -29,7 +29,7 @@ if SENTRY_DSN:
         traces_sample_rate=1.0,
         profiles_sample_rate=1.0,
         send_default_pii=True,
-        debug=False
+        debug=False,
     )
 else:
     print("SENTRY_DSN n'est pas défini. Sentry ne sera pas initialisé.")
