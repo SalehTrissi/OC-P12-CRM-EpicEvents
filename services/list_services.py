@@ -15,14 +15,15 @@ def list_clients():
         clients = get_all_clients()
         if not clients:
             console.print(
-                "[bold yellow]No clients found in the database.[/bold yellow]")
+                "[bold yellow]No clients found in the database.[/bold yellow]"
+            )
         else:
             table = Table(
                 title="[bold cyan]Client List[/bold cyan]",
                 title_style="bold magenta",
                 box=box.ROUNDED,
                 header_style="bold white",
-                show_lines=True
+                show_lines=True,
             )
             table.add_column("Client ID", justify="center", style="cyan", no_wrap=True)
             table.add_column("Full Name", justify="center", style="green")
@@ -43,7 +44,7 @@ def list_clients():
                     client.date_created.strftime("%d-%m-%Y %H:%M:%S"),
                     client.last_contact_date.strftime("%d-%m-%Y %H:%M:%S"),
                     f"{client.sales_contact.first_name} {
-                        client.sales_contact.last_name}"
+                        client.sales_contact.last_name}",
                 )
 
             console.print(table)
@@ -60,17 +61,19 @@ def list_contracts():
         contracts = get_all_contracts()
         if not contracts:
             console.print(
-                "[bold yellow]No contracts found in the database.[/bold yellow]")
+                "[bold yellow]No contracts found in the database.[/bold yellow]"
+            )
         else:
             table = Table(
                 title="[bold cyan]Contract List[/bold cyan]",
                 title_style="bold magenta",
                 box=box.ROUNDED,
                 header_style="bold white",
-                show_lines=True
+                show_lines=True,
             )
-            table.add_column("Contract ID", justify="center",
-                             style="cyan", no_wrap=True)
+            table.add_column(
+                "Contract ID", justify="center", style="cyan", no_wrap=True
+            )
             table.add_column("Client", justify="left", style="cyan")
             table.add_column("Client Contacts", justify="center", style="magenta")
             table.add_column("Total Amount", justify="right", style="green")
@@ -87,12 +90,14 @@ def list_contracts():
                     f"{contract.client.email} \n {contract.client.phone_number}",
                     f"{contract.total_amount:.2f}€",
                     f"{contract.remaining_amount:.2f}€",
-                    "[bold green]Signed[/bold green]"
-                    if contract.is_signed
-                    else "[bold red]Unsigned[/bold red]",
+                    (
+                        "[bold green]Signed[/bold green]"
+                        if contract.is_signed
+                        else "[bold red]Unsigned[/bold red]"
+                    ),
                     contract.date_created.strftime("%d-%m-%Y %H:%M:%S"),
                     f"{contract.sales_contact.first_name} {
-                        contract.sales_contact.last_name}"
+                        contract.sales_contact.last_name}",
                 )
 
             console.print(table)
@@ -114,11 +119,12 @@ def list_events():
                 title_style="bold magenta",
                 box=box.ROUNDED,
                 header_style="bold white",
-                show_lines=True
+                show_lines=True,
             )
             table.add_column("Event ID", justify="center", style="cyan", no_wrap=True)
-            table.add_column("Contract ID", justify="center",
-                             style="cyan", no_wrap=True)
+            table.add_column(
+                "Contract ID", justify="center", style="cyan", no_wrap=True
+            )
             table.add_column("Event Name", justify="center", style="green")
             table.add_column("Client Name", justify="center", style="green")
             table.add_column("Client Contacts", justify="center", style="magenta")
