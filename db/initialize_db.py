@@ -1,8 +1,8 @@
 import os
 import sys
 
-# Add project root directory to sys.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Ensure the project root is accessible
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 def initialize_database():
@@ -15,8 +15,11 @@ def initialize_database():
     from EpicEventsCRM.models.employee_model import Employee  # noqa
     from EpicEventsCRM.models.event_model import Event  # noqa
 
-    Base.metadata.create_all(bind=engine)
-    print("All tables have been created successfully.")
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ All tables have been created successfully.")
+    except Exception as e:
+        print(f"❌ Error initializing database: {e}")
 
 
 if __name__ == "__main__":
