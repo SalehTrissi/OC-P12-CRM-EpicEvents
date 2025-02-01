@@ -12,7 +12,8 @@ def validate_email(address):
 def validate_string_length(value, field_name, max_length):
     if len(value) > max_length:
         raise ValueError(
-            f"Le champ {field_name} est trop long (maximum {max_length} caractères)")
+            f"Le champ {field_name} est trop long (maximum {max_length} caractères)"
+        )
     return value
 
 
