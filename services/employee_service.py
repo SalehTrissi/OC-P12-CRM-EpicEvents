@@ -1,10 +1,15 @@
+from EpicEventsCRM.utils.validators import (
+    validate_email,
+    validate_phone_number,
+    validate_string_length,
+)
 from EpicEventsCRM.models.employee_model import Employee, DepartmentEnum
 from EpicEventsCRM.utils.permissions import has_permission
 from sqlalchemy.exc import IntegrityError
-from db.database import SessionLocal
 from auth import get_current_user
 from rich.console import Console
 from rich.prompt import Prompt
+from db.database import get_db
 from rich.panel import Panel
 from getpass import getpass
 from rich import box
@@ -15,40 +20,74 @@ console = Console()
 
 
 def create_employee():
-    """
-    Creates a new employee with a user-friendly and visually appealing interface.
-    """
+    """Creates a new employee interactively with validation and database integration."""
     current_user = get_current_user()
+
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to create an employee."
-                  " [/bold red]", box=box.ROUNDED))
+            Panel("[bold red]Authentication required.[/bold red]", box=box.ROUNDED)
+        )
         return
 
-    if not has_permission(current_user, 'manage_users'):
+    if not has_permission(current_user, "manage_users"):
         console.print(
-            Panel("[bold red]You do not have permission to create an employee."
-                  "[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]Insufficient permissions.[/bold red]", box=box.ROUNDED)
+        )
         return
 
-    console.print(Panel("[bold cyan]Create New Employee[/bold cyan]",
-                        box=box.ROUNDED, style="bold green"))
+    console.print(
+        Panel(
+            "[bold cyan]Create New Employee[/bold cyan]",
+            box=box.ROUNDED,
+            style="bold green",
+        )
+    )
 
     # Collect employee information
     first_name = Prompt.ask("[bold yellow]Enter first name[/bold yellow]")
-    last_name = Prompt.ask("[bold yellow]Enter last name[/bold yellow]")
-    email = Prompt.ask("[bold yellow]Enter email address[/bold yellow]")
-    phone_number = Prompt.ask("[bold yellow]Enter phone number[/bold yellow]")
-    department_input = Prompt.ask(
-        "[bold yellow]Select department(COMMERCIAL, SUPPORT, MANAGEMENT)[/bold yellow]",
-        choices=["COMMERCIAL", "SUPPORT", "MANAGEMENT"],
-        default="COMMERCIAL"
-    ).upper()
-    console.print("[bold yellow]Enter password:[/bold yellow]", end="")
-    password = getpass(" ")
+    validate_string_length(first_name, "First name", 50)
 
-    # Verify department
+    last_name = Prompt.ask("[bold yellow]Enter last name[/bold yellow]")
+    validate_string_length(last_name, "Last name", 50)
+
+    # Validate email
+    while True:
+        email = Prompt.ask("[bold yellow]Enter email address[/bold yellow]")
+        try:
+            validate_email(email)
+            break
+        except ValueError as e:
+            console.print(Panel(f"[bold red]{e}[/bold red]", box=box.ROUNDED))
+
+    # Validate phone number
+    while True:
+        phone_number = Prompt.ask("[bold yellow]Enter phone number[/bold yellow]")
+        try:
+            validate_phone_number(phone_number)
+            break
+        except ValueError as e:
+            console.print(Panel(f"[bold red]{e}[/bold red]", box=box.ROUNDED))
+
+    # Validate department
+    department_input = Prompt.ask(
+        "[bold yellow]Select department (COMMERCIAL, SUPPORT, MANAGEMENT)"
+        "[/bold yellow]",
+        choices=[
+            "COMMERCIAL",
+            "SUPPORT",
+            "MANAGEMENT"],
+        default="COMMERCIAL",
+    ).upper()
     department = DepartmentEnum[department_input]
+
+    # Secure password input
+    console.print("[bold yellow]Enter password:[/bold yellow]")
+    password = getpass(" ")
+    if not password:
+        console.print(
+            Panel("[bold red]Password cannot be empty.[/bold red]", box=box.ROUNDED)
+        )
+        return
 
     # Create employee object
     employee = Employee(
@@ -56,104 +95,138 @@ def create_employee():
         last_name=last_name,
         email=email,
         phone_number=phone_number,
-        department=department
+        department=department,
     )
     employee.set_password(password)
 
     # Save to database
-    with SessionLocal as session:
-        session.add(employee)
-        try:
-            session.commit()
-            console.print(
-                Panel(f"[bold green]Employee '{first_name} {last_name}'"
-                      " created successfully![/bold green]", box=box.ROUNDED))
-            sentry_sdk.capture_message(
-                f"Employee '{first_name} {last_name}' created successfully!",
-                level="info"
+    db = next(get_db())
+    try:
+        db.add(employee)
+        db.commit()
+        console.print(
+            Panel(
+                f"[bold green]Employee '{first_name} {
+                    last_name}' created successfully![/bold green]",
+                box=box.ROUNDED,
             )
-        except IntegrityError as e:
-            session.rollback()
-            console.print(Panel(
+        )
+        sentry_sdk.capture_message(
+            f"Employee '{first_name} {
+                last_name}' created successfully!",
+            level="info",
+        )
+    except IntegrityError:
+        db.rollback()
+        console.print(
+            Panel(
                 "[bold red]Error: An employee with this email already exists."
-                "[/bold red]", box=box.ROUNDED))
-            sentry_sdk.capture_exception(e)
-        except Exception as e:
-            session.rollback()
-            console.print(Panel(f"[bold red]Error creating employee: {
-                          e}[/bold red]", box=box.ROUNDED))
-            sentry_sdk.capture_exception(e)
+                "[/bold red]",
+                box=box.ROUNDED,
+            ))
+        sentry_sdk.capture_exception(IntegrityError)
+    except Exception as e:
+        db.rollback()
+        console.print(
+            Panel(
+                f"[bold red]Unexpected error: {
+                    e}[/bold red]",
+                box=box.ROUNDED,
+            )
+        )
+        sentry_sdk.capture_exception(e)
+    finally:
+        db.close()
 
 
 def update_employee(employee_id):
-    """
-    Updates an employee's information with a user-friendly and
-    visually appealing interface.
-    """
+    """Updates an employee interactively with validation and error handling."""
     current_user = get_current_user()
+
     if not current_user:
         console.print(
-            Panel("[bold red]You must be authenticated to update an employee."
-                  "[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]Authentication required.[/bold red]", box=box.ROUNDED)
+        )
         return
 
-    if not has_permission(current_user, 'manage_users'):
+    if not has_permission(current_user, "manage_users"):
         console.print(
-            Panel("[bold red]You do not have permission to update an employee."
-                  "[/bold red]", box=box.ROUNDED))
+            Panel("[bold red]Insufficient permissions.[/bold red]", box=box.ROUNDED)
+        )
         return
 
-    with SessionLocal as session:
-        employee = session.query(Employee).filter_by(employee_id=employee_id).first()
+    db = next(get_db())
+
+    try:
+        employee = db.query(Employee).filter_by(employee_id=employee_id).first()
         if not employee:
             console.print(
-                Panel("[bold red]Employee not found.[/bold red]", box=box.ROUNDED))
+                Panel("[bold red]Employee not found.[/bold red]", box=box.ROUNDED)
+            )
             sentry_sdk.capture_message(
-                f"Employee with ID '{employee_id}' not found.", level="warning")
+                f"Employee with ID '{employee_id}' not found.", level="warning"
+            )
             return
 
-        console.print(Panel(f"[bold cyan]Update Employee:"
-                            f" {employee.first_name} {employee.last_name}"
-                            "[/bold cyan]", box=box.ROUNDED, style="bold green"))
-
         console.print(
-            "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n")
+            Panel(
+                f"[bold cyan]Update Employee: {employee.first_name} {
+                    employee.last_name}[/bold cyan]",
+                box=box.ROUNDED,
+                style="bold green",
+            )
+        )
+        console.print(
+            "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n"
+        )
 
         # Collecting new information
         first_name = Prompt.ask(
-            f"[bold yellow]First name[/bold yellow] [bold green](current: {
-                employee.first_name})[/bold green]",
-            default=employee.first_name,
-            show_default=False
+            "[bold yellow]First name[/bold yellow]", default=employee.first_name
         )
         last_name = Prompt.ask(
-            f"[bold yellow]Last name[/bold yellow] [bold green](current: {
-                employee.last_name})[/bold green]",
-            default=employee.last_name,
-            show_default=False
+            "[bold yellow]Last name[/bold yellow]", default=employee.last_name
         )
-        email = Prompt.ask(
-            f"[bold yellow]Email[/bold yellow] [bold green](current: {
-                employee.email})[/bold green]",
-            default=employee.email,
-            show_default=False
-        )
+
+        while True:
+            email = Prompt.ask(
+                "[bold yellow]Email[/bold yellow]", default=employee.email
+            )
+            try:
+                validate_email(email)
+                break
+            except ValueError as e:
+                console.print(Panel(f"[bold red]{e}[/bold red]", box=box.ROUNDED))
+
         phone_number = Prompt.ask(
-            f"[bold yellow]Phone number[/bold yellow] [bold green](current: {
-                employee.phone_number})[/bold green]",
-            default=employee.phone_number,
-            show_default=False
+            "[bold yellow]Phone number[/bold yellow]", default=employee.phone_number
         )
+
         department_input = Prompt.ask(
-            f"[bold yellow]Department[/bold yellow] [bold green](current: {
-                employee.department.name})[/bold green]",
+            "[bold yellow]Department[/bold yellow]",
             choices=["COMMERCIAL", "SUPPORT", "MANAGEMENT"],
             default=employee.department.name,
-            show_default=False
         ).upper()
-
-        # Verify department
         department = DepartmentEnum[department_input]
+
+        # Prompt for password change
+        change_password = Prompt.ask(
+            "[bold yellow]Do you want to change the password? (yes/no)[/bold yellow]",
+            choices=["yes", "no"],
+            default="no",
+        ).lower()
+        if change_password == "yes":
+            console.print("[bold yellow]Enter new password:[/bold yellow]")
+            password = getpass(" ")
+            if password:
+                employee.set_password(password)
+            else:
+                console.print(
+                    Panel(
+                        "[bold red]Password cannot be empty.[/bold red]",
+                        box=box.ROUNDED,
+                    )
+                )
 
         # Update employee details
         employee.first_name = first_name
@@ -162,36 +235,39 @@ def update_employee(employee_id):
         employee.phone_number = phone_number
         employee.department = department
 
-        # Prompt for password change
-        change_password = Prompt.ask(
-            "[bold yellow]Do you want to change the password?[/bold yellow]",
-            choices=["yes", "no"],
-            default="no",
-            show_default=False
-        ).lower()
-        if change_password == "yes":
-            console.print("[bold yellow]Enter new password:[/bold yellow]", end="")
-            password = getpass(" ")
-            employee.set_password(password)
-
         # Save changes to database
-        try:
-            session.commit()
-            console.print(
-                Panel(f"[bold green]Employee '{first_name} {last_name}'"
-                      " updated successfully![/bold green]", box=box.ROUNDED))
-            sentry_sdk.capture_message(
-                f"Employee '{first_name} {last_name}' updated successfully!",
-                level="info"
+        db.commit()
+        console.print(
+            Panel(
+                f"[bold green]Employee '{first_name} {
+                    last_name}' updated successfully![/bold green]",
+                box=box.ROUNDED,
             )
-        except IntegrityError as e:
-            session.rollback()
-            console.print(Panel(
+        )
+        sentry_sdk.capture_message(
+            f"Employee '{first_name} {
+                last_name}' updated successfully!",
+            level="info",
+        )
+
+    except IntegrityError:
+        db.rollback()
+        console.print(
+            Panel(
                 "[bold red]Error: An employee with this email already exists."
-                "[/bold red]", box=box.ROUNDED))
-            sentry_sdk.capture_exception(e)
-        except Exception as e:
-            session.rollback()
-            console.print(Panel(f"[bold red]Error updating employee: {
-                          e}[/bold red]", box=box.ROUNDED))
-            sentry_sdk.capture_exception(e)
+                "[/bold red]",
+                box=box.ROUNDED,
+            ))
+        sentry_sdk.capture_exception(IntegrityError)
+    except Exception as e:
+        db.rollback()
+        console.print(
+            Panel(
+                f"[bold red]Unexpected error: {
+                    e}[/bold red]",
+                box=box.ROUNDED,
+            )
+        )
+        sentry_sdk.capture_exception(e)
+    finally:
+        db.close()
