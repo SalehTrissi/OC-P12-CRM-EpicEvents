@@ -1,14 +1,12 @@
 from ..utils.validators import validate_string_length, validate_positive_integer
-from sqlalchemy import (
-    Column, Integer, String, DateTime, ForeignKey
-)
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, validates
 from datetime import datetime, timezone
 from .base_model import Base
 
 
 class Event(Base):
-    __tablename__ = 'events'
+    __tablename__ = "events"
 
     event_id = Column(Integer, primary_key=True, autoincrement=True)
     event_name = Column(String(100), nullable=False)
@@ -18,26 +16,27 @@ class Event(Base):
     attendees = Column(Integer, nullable=False)
     notes = Column(String(1000))
 
-    client_id = Column(Integer, ForeignKey('clients.client_id'), nullable=False)
-    client = relationship('Client', back_populates='events')
+    client_id = Column(Integer, ForeignKey("clients.client_id"), nullable=False)
+    client = relationship("Client", back_populates="events")
 
-    contract_id = Column(Integer, ForeignKey('contracts.contract_id'), nullable=False)
-    contract = relationship('Contract', back_populates='events')
+    contract_id = Column(Integer, ForeignKey("contracts.contract_id"), nullable=False)
+    contract = relationship("Contract", back_populates="events")
 
-    support_contact_id = Column(Integer, ForeignKey(
-        'employees.employee_id'), nullable=False)
-    support_contact = relationship('Employee', back_populates='events')
+    support_contact_id = Column(
+        Integer, ForeignKey("employees.employee_id"), nullable=False
+    )
+    support_contact = relationship("Employee", back_populates="events")
 
     # Validation des champs
-    @validates('event_name')
+    @validates("event_name")
     def validate_event_name(self, key, value):
         return validate_string_length(value, key, 100)
 
-    @validates('location')
+    @validates("location")
     def validate_location(self, key, value):
         return validate_string_length(value, key, 200)
 
-    @validates('attendees')
+    @validates("attendees")
     def validate_attendees(self, key, value):
         return validate_positive_integer(value, key)
 
@@ -48,10 +47,15 @@ class Event(Base):
         Retourne les événements à venir pour un employé du support donné.
         """
         now = datetime.now(timezone.utc)
-        return session.query(cls).filter(
-            cls.support_contact_id == support_employee_id,
-            cls.event_start_date >= now
-        ).order_by(cls.event_start_date).all()
+        return (
+            session.query(cls)
+            .filter(
+                cls.support_contact_id == support_employee_id,
+                cls.event_start_date >= now,
+            )
+            .order_by(cls.event_start_date)
+            .all()
+        )
 
     def __repr__(self):
         return f"<Event {self.event_id}: {self.event_name} for {self.client.full_name}>"
