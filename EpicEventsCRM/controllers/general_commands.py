@@ -14,8 +14,11 @@ def help_command():
     These commands are defined in commands_registry.py.
     """
     console.print(
-        Panel("[bold cyan]Available Commands:[/bold cyan]",
-              box=box.ROUNDED, style="bold green")
+        Panel(
+            "[bold cyan]Available Commands:[/bold cyan]",
+            box=box.ROUNDED,
+            style="bold green",
+        )
     )
 
     commands = get_command_list()
@@ -24,7 +27,7 @@ def help_command():
     table = Table(
         title="[bold magenta]Command Help[/bold magenta]",
         box=box.ROUNDED,
-        header_style="bold white"
+        header_style="bold white",
     )
     table.add_column("Command", justify="left", style="cyan")
     table.add_column("Description", justify="left", style="green")
