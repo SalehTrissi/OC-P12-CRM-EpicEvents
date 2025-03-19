@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 def initialize_database():
     """Create all tables in the database."""
 
-    from database import engine
+    from db.database import engine
     from EpicEventsCRM.models.base_model import Base
     from EpicEventsCRM.models.client_model import Client  # noqa
     from EpicEventsCRM.models.contract_model import Contract  # noqa
