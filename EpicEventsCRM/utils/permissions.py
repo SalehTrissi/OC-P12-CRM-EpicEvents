@@ -5,7 +5,7 @@ ROLE_PERMISSIONS = {
     "Commercial": {
         "create_client",
         "update_client",
-        "modify_contract",
+        "update_contract",
         "filter_contracts",
         "create_event",
         "read_only",
@@ -14,9 +14,13 @@ ROLE_PERMISSIONS = {
         "list_events",
     },
     "Management": {
+        "create_employee",
+        "update_employee",
+        "delete_employee",
+        "list_employees",
         "manage_users",
         "create_contract",
-        "modify_contract",
+        "update_contract",
         "filter_events",
         "assign_support",
         "read_only",
@@ -67,7 +71,8 @@ def get_available_commands(employee):
 
     available_commands = []
     for command, description in commands.items():
-        normalized_command = command.replace("-", "_")
+        base_command_name = command.split(" ")[0]
+        normalized_command = base_command_name.replace("-", "_")
         # If command is in always_available or in the employee's role permissions
         if command in always_available or normalized_command in ROLE_PERMISSIONS.get(
             employee.department.value, {}

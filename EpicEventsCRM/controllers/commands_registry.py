@@ -18,6 +18,12 @@ COMMANDS = {
     "update-contract <contract_id>": "Update an existing contract.",
     "create-event": "Create a new event.",
     "update-event <event_id>": "Update an existing event.",
+
+    "create-employee": "Create a new employee.",
+    "update-employee <employee_id>": "Update an existing employee.",
+    "delete-employee <employee_id>": "Delete an employee.",
+    "list-employees": "List all employees.",
+
 }
 
 
