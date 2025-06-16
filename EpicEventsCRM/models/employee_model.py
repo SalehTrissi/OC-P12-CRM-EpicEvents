@@ -41,6 +41,8 @@ class Employee(Base):
         self.password_hash = ph.hash(password)
 
     def verify_password(self, password):
+        if isinstance(self.password_hash, Column):
+            raise TypeError("password_hash is a Column, not an instance attribute.")
         try:
             return ph.verify(self.password_hash, password)
         except argon2.exceptions.VerifyMismatchError:

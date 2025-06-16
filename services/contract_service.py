@@ -231,16 +231,16 @@ def update_contract(contract_id):
     is_signed = (
         Prompt.ask(
             f"[bold yellow]Signed contract[/bold yellow] [bold green](current: {
-                'Y' if contract.is_signed else 'N'})[/bold green]",
-            default="Y" if contract.is_signed else "N",
+                'Y' if bool(contract.is_signed) else 'N'})[/bold green]",
+            default="Y" if bool(contract.is_signed) else "N",
         ).upper()
         == "Y"
     )
 
     # Update contract
-    contract.total_amount = total_amount
-    contract.remaining_amount = remaining_amount
-    contract.is_signed = is_signed
+    setattr(contract, "total_amount", total_amount)
+    setattr(contract, "remaining_amount", remaining_amount)
+    setattr(contract, "is_signed", is_signed)
 
     # Save changes to database
     try:

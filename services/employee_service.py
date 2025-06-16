@@ -116,7 +116,7 @@ def create_employee():
                 last_name}' created successfully!",
             level="info",
         )
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
         console.print(
             Panel(
@@ -124,7 +124,7 @@ def create_employee():
                 "[/bold red]",
                 box=box.ROUNDED,
             ))
-        sentry_sdk.capture_exception(IntegrityError)
+        sentry_sdk.capture_exception(e)
     except Exception as e:
         db.rollback()
         console.print(
@@ -229,11 +229,11 @@ def update_employee(employee_id):
                 )
 
         # Update employee details
-        employee.first_name = first_name
-        employee.last_name = last_name
-        employee.email = email
-        employee.phone_number = phone_number
-        employee.department = department
+        setattr(employee, "first_name", first_name)
+        setattr(employee, "last_name", last_name)
+        setattr(employee, "email", email)
+        setattr(employee, "phone_number", phone_number)
+        setattr(employee, "department", department)
 
         # Save changes to database
         db.commit()
@@ -250,7 +250,7 @@ def update_employee(employee_id):
             level="info",
         )
 
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
         console.print(
             Panel(
@@ -258,7 +258,7 @@ def update_employee(employee_id):
                 "[/bold red]",
                 box=box.ROUNDED,
             ))
-        sentry_sdk.capture_exception(IntegrityError)
+        sentry_sdk.capture_exception(e)
     except Exception as e:
         db.rollback()
         console.print(

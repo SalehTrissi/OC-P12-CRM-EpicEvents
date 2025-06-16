@@ -106,7 +106,7 @@ def create_employee_interactive():
                 box=box.ROUNDED,
             )
         )
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
         console.print(
             Panel(
@@ -114,7 +114,7 @@ def create_employee_interactive():
                 "[/bold red]",
                 box=box.ROUNDED,
             ))
-        sentry_sdk.capture_exception(IntegrityError)
+        sentry_sdk.capture_exception(e)
     except Exception as e:
         db.rollback()
         console.print(

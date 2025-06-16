@@ -29,7 +29,7 @@ class TestSentryIntegration(unittest.TestCase):
     def test_capture_exception(self):
         try:
             try:
-                1 / 0
+                1 / 0  # type: ignore
             except Exception as e:
                 capture_exception(e)
                 self.assertTrue(True)

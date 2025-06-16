@@ -175,103 +175,94 @@ def create_event():
         db.close()
 
 
-def update_event(event_id):
-    """Update an existing event."""
+def update_event(event_id: int):
+    """
+    Updates an event's information after checking for specific user permissions.
+    """
+    # --- 1. Vérification des Permissions Initiales ---
     current_user = get_current_user()
-
     if not current_user:
         console.print(
-            Panel("[bold red]Authentication required.[/bold red]", box=box.ROUNDED)
-        )
+            Panel("[bold red]Authentication required.[/bold red]", box=box.ROUNDED))
         return
 
     if not has_permission(current_user, "update_event"):
         console.print(
-            Panel("[bold red]Insufficient permissions.[/bold red]", box=box.ROUNDED)
-        )
+            Panel("[bold red]Insufficient permissions to update events.[/bold red]", box=box.ROUNDED))
         return
 
     db = next(get_db())
-
     try:
+        # --- 2. Récupération de l'Objet et Vérification de la Propriété ---
         event = db.query(Event).filter_by(event_id=event_id).first()
-
-        if not event:
+        if event is None:
             console.print(
-                Panel("[bold red]Event not found.[/bold red]", box=box.ROUNDED)
-            )
+                Panel("[bold red]Event not found.[/bold red]", box=box.ROUNDED))
             return
 
-        console.print(
-            Panel(
-                f"[bold cyan]Update Event: {
-                    event.event_name}[/bold cyan]",
-                box=box.ROUNDED,
-                style="bold green",
-            )
-        )
-        console.print(
-            "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n"
-        )
-
-        event.event_name = Prompt.ask(
-            "[bold yellow]Event name[/bold yellow]", default=event.event_name
-        )
-        event.event_start_date = parse_date(
-            Prompt.ask(
-                "[bold yellow]Start date (DD-MM-YYYY HH:MM)[/bold yellow]",
-                default=event.event_start_date.strftime("%d-%m-%Y %H:%M"),
-            ),
-            event.event_start_date,
-        )
-        event.event_end_date = parse_date(
-            Prompt.ask(
-                "[bold yellow]End date (DD-MM-YYYY HH:MM)[/bold yellow]",
-                default=event.event_end_date.strftime("%d-%m-%Y %H:%M"),
-            ),
-            event.event_end_date,
-        )
-        event.location = Prompt.ask(
-            "[bold yellow]Location[/bold yellow]", default=event.location
-        )
-        attendees_input = Prompt.ask(
-            "[bold yellow]Number of attendees[/bold yellow]",
-            default=str(event.attendees),
-        )
-
-        try:
-            event.attendees = int(attendees_input)
-        except ValueError:
-            console.print(
-                Panel(
-                    "[bold red]Invalid number of attendees.[/bold red]", box=box.ROUNDED
-                )
-            )
+        # Un membre du support ne peut modifier que les événements qui lui sont assignés.
+        support_id = getattr(event, "support_contact_id", None)
+        if (
+            current_user.department.value == DepartmentEnum.SUPPORT.value
+            and support_id is not None
+            and support_id != current_user.employee_id
+        ):
+            console.print(Panel(
+                "[bold red]You can only update events assigned to you.[/bold red]", box=box.ROUNDED))
             return
 
-        event.notes = Prompt.ask(
-            "[bold yellow]Notes[/bold yellow]", default=event.notes
-        )
+        # --- 3. Collecte des Nouvelles Informations ---
+        console.print(Panel(
+            f"[bold cyan]Update Event: {event.event_name}[/bold cyan]", box=box.ROUNDED, style="bold green"))
+        console.print(
+            "[bold yellow](Leave blank to keep the current value.)[/bold yellow]\n")
 
+        new_data = {
+            "event_name": Prompt.ask("[bold yellow]Event name[/bold yellow]", default=event.event_name),
+            "location": Prompt.ask("[bold yellow]Location[/bold yellow]", default=event.location),
+            "attendees": int(Prompt.ask("[bold yellow]Number of attendees[/bold yellow]",
+                                        default=str(event.attendees))),
+            "notes": Prompt.ask("[bold yellow]Notes[/bold yellow]", default=event.notes),
+            "event_start_date": parse_date(
+                Prompt.ask(
+                    "[bold yellow]Start date (DD-MM-YYYY HH:MM)[/bold yellow]",
+                    default=event.event_start_date.strftime("%d-%m-%Y %H:%M"),
+                ),
+                event.event_start_date,
+            ),
+            "event_end_date": parse_date(
+                Prompt.ask(
+                    "[bold yellow]End date (DD-MM-YYYY HH:MM)[/bold yellow]",
+                    default=event.event_end_date.strftime("%d-%m-%Y %H:%M"),
+                ),
+                event.event_end_date,
+            ),
+        }
+
+        # --- 4. Mise à jour de l'Objet ---
+        event.event_name = new_data["event_name"]
+        event.event_start_date = new_data["event_start_date"]
+        event.event_end_date = new_data["event_end_date"]
+        event.location = new_data["location"]
+        event.attendees = new_data["attendees"]
+        event.notes = new_data["notes"]
+
+        # --- 5. Sauvegarde en Base de Données ---
         db.commit()
         console.print(
-            Panel(
-                "[bold green]Event updated successfully![/bold green]", box=box.ROUNDED
-            )
-        )
+            Panel("[bold green]Event updated successfully![/bold green]", box=box.ROUNDED))
         sentry_sdk.capture_message(
-            f"Event '{event.event_name}' updated successfully!", level="info"
-        )
+            f"Event '{event.event_name}' updated successfully!", level="info")
 
+    except ValueError:
+        # Gère l'erreur si la conversion de 'attendees' en int échoue
+        console.print(
+            Panel("[bold red]Invalid input for number of attendees.[/bold red]", box=box.ROUNDED))
+        db.rollback()
     except Exception as e:
         db.rollback()
         console.print(
-            Panel(
-                f"[bold red]Unexpected error: {
-                    e}[/bold red]",
-                box=box.ROUNDED,
-            )
-        )
+            Panel(f"[bold red]Unexpected error: {e}[/bold red]", box=box.ROUNDED))
         sentry_sdk.capture_exception(e)
     finally:
         db.close()

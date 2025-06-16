@@ -37,14 +37,13 @@ def list_clients():
             for client in clients:
                 table.add_row(
                     str(client.client_id),
-                    client.full_name,
-                    client.email,
-                    client.phone_number,
-                    client.company_name,
+                    str(client.full_name),
+                    str(client.email),
+                    str(client.phone_number),
+                    str(client.company_name),
                     client.date_created.strftime("%d-%m-%Y %H:%M:%S"),
                     client.last_contact_date.strftime("%d-%m-%Y %H:%M:%S"),
-                    f"{client.sales_contact.first_name} {
-                        client.sales_contact.last_name}",
+                    f"{client.sales_contact.first_name} {client.sales_contact.last_name}",
                 )
 
             console.print(table)
@@ -92,7 +91,7 @@ def list_contracts():
                     f"{contract.remaining_amount:.2f}€",
                     (
                         "[bold green]Signed[/bold green]"
-                        if contract.is_signed
+                        if bool(contract.is_signed)
                         else "[bold red]Unsigned[/bold red]"
                     ),
                     contract.date_created.strftime("%d-%m-%Y %H:%M:%S"),
@@ -139,16 +138,15 @@ def list_events():
                 table.add_row(
                     str(event.event_id),
                     str(event.contract_id),
-                    event.event_name,
+                    str(event.event_name),
                     event.client.full_name,
                     f"{event.client.email} \n {event.client.phone_number}",
                     event.event_start_date.strftime("%d-%m-%Y %H:%M:%S"),
                     event.event_end_date.strftime("%d-%m-%Y %H:%M:%S"),
-                    event.location,
+                    str(event.location),
                     str(event.attendees),
-                    f"{event.support_contact.first_name} {
-                        event.support_contact.last_name}",
-                    event.notes,
+                    f"{event.support_contact.first_name} {event.support_contact.last_name}",
+                    str(event.notes),
                 )
 
             console.print(table)

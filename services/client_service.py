@@ -81,15 +81,14 @@ def create_client():
         db.commit()
         console.print(
             Panel(
-                f"[bold green]Client '{
-                    full_name}' created successfully![/bold green]",
+                f"[bold green]Client '{full_name}' created successfully![/bold green]",
                 box=box.ROUNDED,
             )
         )
         sentry_sdk.capture_message(
             f"Client '{full_name}' created successfully!", level="info"
         )
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
         console.print(
             Panel(
@@ -97,13 +96,12 @@ def create_client():
                 box=box.ROUNDED,
             )
         )
-        sentry_sdk.capture_exception(IntegrityError("Duplicate email"))
+        sentry_sdk.capture_exception(e)
     except Exception as e:
         db.rollback()
         console.print(
             Panel(
-                f"[bold red]Error creating client: {
-                    e}[/bold red]",
+                f"[bold red]Error creating client: {e}[/bold red]",
                 box=box.ROUNDED,
             )
         )
@@ -181,10 +179,10 @@ def update_client(client_id):
     validate_string_length(company_name, "Company name", 100)
 
     # Update client details
-    client.full_name = full_name
-    client.email = email
-    client.phone_number = phone_number
-    client.company_name = company_name
+    setattr(client, "full_name", full_name)
+    setattr(client, "email", email)
+    setattr(client, "phone_number", phone_number)
+    setattr(client, "company_name", company_name)
 
     # Save changes to database
     try:
@@ -199,7 +197,7 @@ def update_client(client_id):
         sentry_sdk.capture_message(
             f"Client '{full_name}' updated successfully!", level="info"
         )
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
         console.print(
             Panel(
@@ -207,13 +205,12 @@ def update_client(client_id):
                 box=box.ROUNDED,
             )
         )
-        sentry_sdk.capture_exception(IntegrityError("Duplicate email"))
+        sentry_sdk.capture_exception(e)
     except Exception as e:
         db.rollback()
         console.print(
             Panel(
-                f"[bold red]Error updating client: {
-                    e}[/bold red]",
+                f"[bold red]Error updating client: {e}[/bold red]",
                 box=box.ROUNDED,
             )
         )

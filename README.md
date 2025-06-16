@@ -1,11 +1,11 @@
 # OC-P12-CRM-EpicEvents
 
-
-# Epic Events CRM
+## Epic Events CRM
 
 A customer relationship management (CRM) system for Epic Events, a company specializing in corporate event organization.
 
 ### 🔹 **Why Use Epic Events CRM?**
+
 ✅ Secure authentication with **JWT**  
 ✅ Fully featured **command-line interface (CLI)**  
 ✅ Tracks issues and errors in real-time using **Sentry**  
@@ -50,7 +50,7 @@ The application manages different user roles (Sales, Support, Management) with s
 
 ## Project Architecture
 
-```
+```bash
 EpicEventsCRM/
 ├── controllers/          # Controllers managing user interactions
 ├── models/               # SQLAlchemy data models
@@ -71,6 +71,7 @@ epicevents.py             # Main entry point
 ### 📌 Prerequisites
 
 Ensure that you have the following installed:
+
 - **Python 3.9+**
 - **PostgreSQL and PgAdmin**
 - **pip** (Python package manager)
@@ -79,12 +80,14 @@ Ensure that you have the following installed:
 ### 📂 Setup Instructions
 
 1️⃣ **Clone the repository:**
+
    ```bash
    git clone https://github.com/SalehTrissi/OC-P12-CRM-EpicEvents.git
    cd OC-P12-CRM-EpicEvents
    ```
 
 2️⃣ **Create and activate a virtual environment:**
+
    ```bash
    python -m venv env
    source env/bin/activate  # For Linux/macOS
@@ -92,6 +95,7 @@ Ensure that you have the following installed:
    ```
 
 3️⃣ **Install dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -103,9 +107,11 @@ The following sections will guide you through configuring your environment for E
 ## Database Setup
 
 ### **Step 1: Install PostgreSQL**
+
 Download and install [PostgreSQL](https://www.postgresql.org/download/), and ensure the server is running.
 
 ### **Step 2: Create the Database**
+
 Once you have PostgreSQL installed, you can create the database using the following steps:
 
 1. Open the SQL Shell (psql) from your Start menu or applications folder
@@ -117,6 +123,7 @@ CREATE DATABASE epic_events;
 ```
 
 If you want to create a dedicated user (optional):
+
 ```sql
 CREATE USER epic_admin WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE epic_events TO epic_admin;
@@ -132,7 +139,7 @@ The last command is crucial as it sets the user as the owner of the database, wh
 
 Now create a `.env` file in the root directory of the project and add your database connection information:
 
-```
+```bash
 DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/epic_events
 ```
 
@@ -147,7 +154,8 @@ python -m db.initialize_db
 ```
 
 You should see a confirmation message:
-```
+
+```bash
 ✅ All tables have been created successfully.
 ```
 
@@ -161,7 +169,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 Add the generated key to your `.env` file:
 
-```
+```bash
 JWT_SECRET=your_generated_jwt_secret_key
 ```
 
@@ -176,7 +184,7 @@ If you want to use Sentry for error tracking:
 3. Copy the DSN URL from **Project Settings > Client Keys (DSN)**
 4. Add it to your `.env` file:
 
-```
+```bash
 SENTRY_DSN=your_sentry_dsn_key
 ```
 
@@ -185,6 +193,7 @@ SENTRY_DSN=your_sentry_dsn_key
 ### **Step 6: Create an Administrative User**
 
 Create your first administrative user:
+
 ```bash
 python -m scripts.create_employee
 ```
@@ -196,7 +205,9 @@ Follow the prompts to create a Management user who will have full access to the 
 You can interact with Epic Events CRM in **two ways**:
 
 ### **1️⃣ Using Direct Commands**
+
 Run specific commands directly:
+
 ```bash
 python -m epicevents login
 python -m epicevents create-client
@@ -206,14 +217,19 @@ python -m epicevents logout
 ```
 
 ### **2️⃣ Using the Interactive Menu**
+
 Launch an interactive session where you can choose commands:
+
 ```bash
 python -m epicevents menu
 ```
+
 You can stay in the menu and navigate through the available options.
 
 ### **3️⃣ Displaying Help**
+
 To see a list of all available commands:
+
 ```bash
 python -m epicevents help
 ```
@@ -244,17 +260,20 @@ python -m epicevents help
 The application has three main roles with specific permissions:
 
 ### Sales
+
 - Client management (creation, updating)
 - Contract modification
 - Event creation
 - Viewing lists (clients, contracts, events)
 
 ### Support
+
 - Event updating
 - Event filtering
 - Viewing lists (clients, contracts, events)
 
 ### Management
+
 - User management (creation, updating)
 - Contract management (creation, modification)
 - Event filtering
@@ -266,22 +285,26 @@ The role-based access control (RBAC) system ensures that each user receives appr
 ## Data Models
 
 ### Employee
+
 - Personal information (first name, last name, email, phone)
 - Department (Sales, Support, Management)
 - Secure password (hashed with Argon2)
 
 ### Client
+
 - Client information (name, email, phone, company)
 - Assigned sales contact
 - Creation and last contact dates
 
 ### Contract
+
 - Total and remaining amounts
 - Status (signed or not)
 - Associated client
 - Associated sales contact
 
 ### Event
+
 - Event information (name, dates, location, attendees)
 - Associated client
 - Associated contract
@@ -303,7 +326,9 @@ python -m tests.test_sentry
 ```
 
 ##
-> **📌 Useful Debugging Tips:**  
+
+> **📌 Useful Debugging Tips:**
+>
 > - Run `python -m epicevents status` to check authentication status.  
 > - If you encounter permission errors, ensure PostgreSQL credentials are correct.
 
@@ -319,9 +344,10 @@ To assist in resolving potential issues:
 
 The application uses Sentry for error monitoring. To activate it, add your Sentry DSN in the `.env` file:
 
-```
+```bash
 SENTRY_DSN=https://your_key@sentry.io/your_project
 ```
+
 ---
 
 🎉 **Enjoy using Epic Events CRM!**  

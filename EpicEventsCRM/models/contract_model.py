@@ -36,10 +36,13 @@ class Contract(Base):
         """
         Retourne tous les contrats non signés.
         """
-        return session.query(cls).filter_by(is_signed=False).all()
+        return session.query(cls).filter(cls.is_signed.is_(False)).all()
 
     def __repr__(self):
-        status = "Signed" if self.is_signed else "Unsigned"
+        """
+        Représentation de l'objet Contract.
+        """
+        status = "Signed" if self.is_signed is True else "Unsigned"
         return (
             f"<Contract {self.contract_id}: {status}, "
             f"Total: {self.total_amount}, Remaining:{self.remaining_amount}>"
