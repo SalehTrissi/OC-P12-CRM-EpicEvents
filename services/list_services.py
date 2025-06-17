@@ -7,148 +7,141 @@ from rich import box
 console = Console()
 
 
-def list_clients():
+def _display_table(title: str, get_data_func, column_configs: list, row_formatter_func):
     """
-    Lists all clients with proper error handling and displays them in a detailed table.
+    Generic function to display a data table.
+    It handles data retrieval, no-data cases, table creation,
+    and the display of formatted rows.
     """
     try:
-        clients = get_all_clients()
-        if not clients:
+        items = get_data_func()
+        if not items:
             console.print(
-                "[bold yellow]No clients found in the database.[/bold yellow]"
-            )
-        else:
-            table = Table(
-                title="[bold cyan]Client List[/bold cyan]",
-                title_style="bold magenta",
-                box=box.ROUNDED,
-                header_style="bold white",
-                show_lines=True,
-            )
-            table.add_column("Client ID", justify="center", style="cyan", no_wrap=True)
-            table.add_column("Full Name", justify="center", style="green")
-            table.add_column("Email", justify="center", style="magenta")
-            table.add_column("Phone Number", justify="center", style="yellow")
-            table.add_column("Company Name", justify="center", style="blue")
-            table.add_column("Created Date", justify="center", style="cyan")
-            table.add_column("Last Contact Date", justify="center", style="cyan")
-            table.add_column("Sales Contact", justify="center", style="green")
+                f"[bold yellow]No {title.lower()} found in the database.[/bold yellow]")
+            return
 
-            for client in clients:
-                table.add_row(
-                    str(client.client_id),
-                    str(client.full_name),
-                    str(client.email),
-                    str(client.phone_number),
-                    str(client.company_name),
-                    client.date_created.strftime("%d-%m-%Y %H:%M:%S"),
-                    client.last_contact_date.strftime("%d-%m-%Y %H:%M:%S"),
-                    f"{client.sales_contact.first_name} {client.sales_contact.last_name}",
-                )
+        table = Table(
+            title=f"[bold cyan]{title}[/bold cyan]",
+            box=box.ROUNDED,
+            header_style="bold white",
+            show_lines=True,
+        )
 
-            console.print(table)
+        for col_config in column_configs:
+            table.add_column(**col_config)
+
+        for item in items:
+            table.add_row(*row_formatter_func(item))
+
+        console.print(table)
     except PermissionError as e:
         console.print(f"[bold red]{e}[/bold red]")
+
+
+# --- Specific Configurations and Formatters ---
+
+# Configuration for the clients table
+CLIENT_COLUMNS = [
+    {"header": "Client ID", "justify": "center", "style": "cyan", "no_wrap": True},
+    {"header": "Full Name", "style": "green"},
+    {"header": "Email", "style": "magenta"},
+    {"header": "Phone Number", "style": "yellow"},
+    {"header": "Company Name", "style": "blue"},
+    {"header": "Created Date", "justify": "center", "style": "cyan"},
+    {"header": "Last Contact", "justify": "center", "style": "cyan"},
+    {"header": "Sales Contact", "style": "green"},
+]
+
+
+def _format_client_row(client):
+    """Formats a row for the clients table."""
+    sales_contact = client.sales_contact
+    contact_name = f"{sales_contact.first_name} {sales_contact.last_name}" if sales_contact else "N/A"
+    return (
+        str(client.client_id),
+        client.full_name,
+        client.email,
+        client.phone_number,
+        client.company_name,
+        client.date_created.strftime("%d-%m-%Y"),
+        client.last_contact_date.strftime("%d-%m-%Y"),
+        contact_name,
+    )
+
+
+# Configuration for the contracts table
+CONTRACT_COLUMNS = [
+    {"header": "Contract ID", "justify": "center", "style": "cyan", "no_wrap": True},
+    {"header": "Client", "style": "cyan"},
+    {"header": "Total Amount", "justify": "right", "style": "green"},
+    {"header": "Remaining", "justify": "right", "style": "yellow"},
+    {"header": "Status", "justify": "center", "style": "magenta"},
+    {"header": "Sales Contact", "style": "green"},
+]
+
+
+def _format_contract_row(contract):
+    """Formats a row for the contracts table."""
+    status = "[bold green]Signed[/bold green]" if contract.is_signed else "[bold red]Unsigned[/bold red]"
+    sales_contact = contract.sales_contact
+    contact_name = f"{sales_contact.first_name} {sales_contact.last_name}" if sales_contact else "N/A"
+    return (
+        str(contract.contract_id),
+        contract.client.full_name,
+        f"{contract.total_amount:.2f}€",
+        f"{contract.remaining_amount:.2f}€",
+        status,
+        contact_name,
+    )
+
+
+# Configuration for the events table
+EVENT_COLUMNS = [
+    {"header": "Event ID", "justify": "center", "style": "cyan", "no_wrap": True},
+    {"header": "Event Name", "style": "green"},
+    {"header": "Client", "style": "cyan"},
+    {"header": "Location", "style": "yellow"},
+    {"header": "Attendees", "justify": "center", "style": "blue"},
+    {"header": "Dates", "justify": "center"},
+    {"header": "Support Contact", "style": "magenta"},
+]
+
+
+def _format_event_row(event):
+    """Formats a row for the events table."""
+    support_contact = event.support_contact
+    contact_name = (
+        f"{support_contact.first_name} {support_contact.last_name}"
+        if support_contact else "[dim]Not Assigned[/dim]"
+    )
+    dates = (
+        f"{event.event_start_date.strftime('%d-%m-%y %Hh%M')} - "
+        f"{event.event_end_date.strftime('%d-%m-%y %Hh%M')}"
+    )
+    return (
+        str(event.event_id),
+        event.event_name,
+        event.client.full_name,
+        event.location,
+        str(event.attendees),
+        dates,
+        contact_name,
+    )
+
+
+# --- Public Functions (Simple and Clean) ---
+
+def list_clients():
+    """Lists all clients by calling the generic display table function."""
+    _display_table("Client List", get_all_clients, CLIENT_COLUMNS, _format_client_row)
 
 
 def list_contracts():
-    """
-    Lists all contracts with proper error handling and
-    displays them in a detailed table.
-    """
-    try:
-        contracts = get_all_contracts()
-        if not contracts:
-            console.print(
-                "[bold yellow]No contracts found in the database.[/bold yellow]"
-            )
-        else:
-            table = Table(
-                title="[bold cyan]Contract List[/bold cyan]",
-                title_style="bold magenta",
-                box=box.ROUNDED,
-                header_style="bold white",
-                show_lines=True,
-            )
-            table.add_column(
-                "Contract ID", justify="center", style="cyan", no_wrap=True
-            )
-            table.add_column("Client", justify="left", style="cyan")
-            table.add_column("Client Contacts", justify="center", style="magenta")
-            table.add_column("Total Amount", justify="right", style="green")
-            table.add_column("Remaining Amount", justify="right", style="yellow")
-            table.add_column("Status", justify="center", style="magenta")
-            table.add_column("Created Date", justify="center", style="blue")
-
-            table.add_column("Sales Contact", justify="left", style="green")
-
-            for contract in contracts:
-                table.add_row(
-                    str(contract.contract_id),
-                    contract.client.full_name,
-                    f"{contract.client.email} \n {contract.client.phone_number}",
-                    f"{contract.total_amount:.2f}€",
-                    f"{contract.remaining_amount:.2f}€",
-                    (
-                        "[bold green]Signed[/bold green]"
-                        if bool(contract.is_signed)
-                        else "[bold red]Unsigned[/bold red]"
-                    ),
-                    contract.date_created.strftime("%d-%m-%Y %H:%M:%S"),
-                    f"{contract.sales_contact.first_name} {
-                        contract.sales_contact.last_name}",
-                )
-
-            console.print(table)
-    except PermissionError as e:
-        console.print(f"[bold red]{e}[/bold red]")
+    """Lists all contracts by calling the generic display table function."""
+    _display_table("Contract List", get_all_contracts,
+                   CONTRACT_COLUMNS, _format_contract_row)
 
 
 def list_events():
-    """
-    Lists all events with proper error handling and displays them in a detailed table.
-    """
-    try:
-        events = get_all_events()
-        if not events:
-            console.print("[bold yellow]No events found in the database.[/bold yellow]")
-        else:
-            table = Table(
-                title="[bold cyan]Event List[/bold cyan]",
-                title_style="bold magenta",
-                box=box.ROUNDED,
-                header_style="bold white",
-                show_lines=True,
-            )
-            table.add_column("Event ID", justify="center", style="cyan", no_wrap=True)
-            table.add_column(
-                "Contract ID", justify="center", style="cyan", no_wrap=True
-            )
-            table.add_column("Event Name", justify="center", style="green")
-            table.add_column("Client Name", justify="center", style="green")
-            table.add_column("Client Contacts", justify="center", style="magenta")
-            table.add_column("Start Date", justify="center", style="green")
-            table.add_column("End Date", justify="center", style="red")
-            table.add_column("Location", justify="center", style="yellow")
-            table.add_column("Attendees", justify="center", style="cyan")
-            table.add_column("Support Contact", justify="center", style="cyan")
-            table.add_column("Notes", justify="center", style="magenta")
-
-            for event in events:
-                table.add_row(
-                    str(event.event_id),
-                    str(event.contract_id),
-                    str(event.event_name),
-                    event.client.full_name,
-                    f"{event.client.email} \n {event.client.phone_number}",
-                    event.event_start_date.strftime("%d-%m-%Y %H:%M:%S"),
-                    event.event_end_date.strftime("%d-%m-%Y %H:%M:%S"),
-                    str(event.location),
-                    str(event.attendees),
-                    f"{event.support_contact.first_name} {event.support_contact.last_name}",
-                    str(event.notes),
-                )
-
-            console.print(table)
-    except PermissionError as e:
-        console.print(f"[bold red]{e}[/bold red]")
+    """Lists all events by calling the generic display table function."""
+    _display_table("Event List", get_all_events, EVENT_COLUMNS, _format_event_row)
