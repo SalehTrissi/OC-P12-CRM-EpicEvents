@@ -1,4 +1,4 @@
-from services.data_access import get_all_clients, get_all_contracts, get_all_events
+from services.data_access import get_all_clients, get_all_contracts, get_all_events, get_all_employees
 from rich.console import Console
 from rich.table import Table
 from rich import box
@@ -129,7 +129,30 @@ def _format_event_row(event):
     )
 
 
+# Configuration for the employees table
+EMPLOYEE_COLUMNS = [
+    {"header": "Employee ID", "justify": "center", "style": "cyan", "no_wrap": True},
+    {"header": "Full Name", "style": "green"},
+    {"header": "Email", "style": "magenta"},
+    {"header": "Phone Number", "style": "yellow"},
+    {"header": "Department", "style": "blue"},
+    {"header": "Role", "style": "cyan"},
+]
+
+
+def _format_employee_row(employee):
+    """Formats a row for the employees table."""
+    return (
+        str(employee.employee_id),
+        f"{employee.first_name} {employee.last_name}",
+        employee.email,
+        employee.phone_number,
+        employee.department.value,
+        employee.department.value,
+    )
+
 # --- Public Functions (Simple and Clean) ---
+
 
 def list_clients():
     """Lists all clients by calling the generic display table function."""
@@ -145,3 +168,9 @@ def list_contracts():
 def list_events():
     """Lists all events by calling the generic display table function."""
     _display_table("Event List", get_all_events, EVENT_COLUMNS, _format_event_row)
+
+
+def list_employees():
+    """Lists all employees by calling the generic display table function."""
+    _display_table("Employee List", get_all_employees,
+                   EMPLOYEE_COLUMNS, _format_employee_row)

@@ -3,7 +3,7 @@ import sys
 import click
 from rich.console import Console
 from auth import login as auth_login, logout as auth_logout, status as auth_status
-from services.list_services import list_clients, list_contracts, list_events
+from services.list_services import list_clients, list_contracts, list_events, list_employees
 from services.employee_service import create_employee, update_employee
 from services.contract_service import create_contract, update_contract
 from services.client_service import create_client, update_client
@@ -105,6 +105,12 @@ def create_employee_command():
 def update_employee_command(employee_id):
     """Update an existing employee."""
     update_employee(employee_id)
+
+
+@cli.command(name="list-employees")
+def list_employees_command():
+    """List all employees."""
+    list_employees()
 
 
 @cli.command(name="create-client")

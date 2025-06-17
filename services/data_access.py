@@ -1,5 +1,6 @@
 # File: services/data_access.py (Refactored)
 
+from EpicEventsCRM.models.employee_model import Employee
 from EpicEventsCRM.utils.permissions import has_permission
 from EpicEventsCRM.models.contract_model import Contract
 from EpicEventsCRM.models.client_model import Client
@@ -80,5 +81,18 @@ def get_all_events():
     except Exception as e:
         sentry_sdk.capture_exception(e)
         raise RuntimeError(f"Database error while retrieving events: {e}")
+    finally:
+        db.close()
+
+
+@require_permission("list_employees")
+def get_all_employees():
+    """Retrieves all employees from the database."""
+    db = next(get_db())
+    try:
+        return db.query(Employee).all()
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        raise RuntimeError(f"Database error while retrieving employees: {e}")
     finally:
         db.close()
