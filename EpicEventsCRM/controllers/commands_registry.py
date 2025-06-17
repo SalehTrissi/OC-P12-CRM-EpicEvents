@@ -1,29 +1,33 @@
-from rich.console import Console
-
-
-console = Console()
-
-# Basic commands and their descriptions
+# EpicEventsCRM - Commands Registry
 COMMANDS = {
-    "menu": "Display the interactive menu.",
-    "login": "Log in to the system.",
-    "logout": "Log out of the system.",
-    "status": "Display the current login status.",
-    "list-clients": "List all clients.",
-    "list-contracts": "List all contracts.",
-    "list-events": "List all events.",
-    "create-client": "Create a new client.",
-    "update-client <client_id>": "Update an existing client.",
-    "create-contract": "Create a new contract.",
-    "update-contract <contract_id>": "Update an existing contract.",
-    "create-event": "Create a new event.",
-    "update-event <event_id>": "Update an existing event.",
+    # --- System & Interaction ---
+    "status":                       "Display the current login status.",
+    "menu":                         "Display the interactive menu.",
+    "login":                        "Log in to the system.",
 
-    "create-employee": "Create a new employee.",
+    # --- Employee Administration (Management Role) ---
+    "create-employee":              "Create a new employee.",
     "update-employee <employee_id>": "Update an existing employee.",
     "delete-employee <employee_id>": "Delete an employee.",
-    "list-employees": "List all employees.",
+    "list-employees":               "List all employees.",
 
+    # --- Client Management ---
+    "create-client":                "Create a new client.",
+    "update-client <client_id>":    "Update an existing client.",
+    "list-clients":                 "List all clients.",
+
+    # --- Contract Management ---
+    "create-contract":              "Create a new contract.",
+    "update-contract <contract_id>": "Update an existing contract.",
+    "list-contracts":               "List all contracts.",
+
+    # --- Event Management ---
+    "create-event":                 "Create a new event.",
+    "update-event <event_id>":      "Update an existing event.",
+    "list-events":                  "List all events.",
+
+    # --- Session Finalization ---
+    "logout":                       "Log out of the system.",
 }
 
 
