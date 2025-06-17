@@ -1,4 +1,7 @@
+# File: EpicEventsCRM/utils/permissions.py (Refactored)
+
 from EpicEventsCRM.controllers.commands_registry import get_command_list
+from EpicEventsCRM.models.employee_model import Employee
 
 
 ROLE_PERMISSIONS = {
@@ -6,9 +9,7 @@ ROLE_PERMISSIONS = {
         "create_client",
         "update_client",
         "update_contract",
-        "filter_contracts",
         "create_event",
-        "read_only",
         "list_clients",
         "list_contracts",
         "list_events",
@@ -18,20 +19,16 @@ ROLE_PERMISSIONS = {
         "update_employee",
         "delete_employee",
         "list_employees",
-        "manage_users",
         "create_contract",
         "update_contract",
-        "filter_events",
+        "update_event",
         "assign_support",
-        "read_only",
         "list_clients",
         "list_contracts",
         "list_events",
     },
     "Support": {
-        "filter_events",
         "update_event",
-        "read_only",
         "list_clients",
         "list_contracts",
         "list_events",
@@ -39,44 +36,41 @@ ROLE_PERMISSIONS = {
 }
 
 
-def has_permission(employee, permission_name):
+def has_permission(employee: Employee, permission_name: str) -> bool:
     """
-    Check if an employee has a specific permission.
-    :param employee: The current employee object.
-    :param permission_name: The permission name to check.
-    :return: True or False
+    Checks if an employee's role grants them a specific permission.
+
+    Args:
+        employee: The employee object to check.
+        permission_name: The name of the permission string.
+
+    Returns:
+        True if the employee has the permission, False otherwise.
     """
     role_name = employee.department.value
     return permission_name in ROLE_PERMISSIONS.get(role_name, set())
 
 
-def get_available_commands(employee):
+def get_available_commands(employee: Employee) -> list:
     """
-    Return a list of commands available to the currently logged-in employee,
-    based on their role permissions.
-    :param employee: The current employee object.
-    :return: A list of tuples (command_name, description) for the available commands.
+    Returns a list of commands available to the employee based on their role.
+
+    Args:
+        employee: The currently logged-in employee object.
+
+    Returns:
+        A list of (command_name, description) tuples for available commands.
     """
     commands = get_command_list()
-
-    # These commands are always available
-    always_available = {
-        "menu",
-        "logout",
-        "status",
-        "list-clients",
-        "list-contracts",
-        "list-events",
-    }
+    always_available = {"menu", "logout", "status"}
 
     available_commands = []
     for command, description in commands.items():
-        base_command_name = command.split(" ")[0]
-        normalized_command = base_command_name.replace("-", "_")
-        # If command is in always_available or in the employee's role permissions
-        if command in always_available or normalized_command in ROLE_PERMISSIONS.get(
-            employee.department.value, {}
-        ):
+        base_command = command.split(" ")[0]
+        normalized_command = base_command.replace("-", "_")
+
+        # Check if the command is always available or if the user has permission
+        if base_command in always_available or has_permission(employee, normalized_command):
             available_commands.append((command, description))
 
     return available_commands
