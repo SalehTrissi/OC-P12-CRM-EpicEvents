@@ -5,6 +5,9 @@ from EpicEventsCRM.utils.validators import (
     validate_phone_number,
     validate_string_length,
 )
+from EpicEventsCRM.models.client_model import Client
+from EpicEventsCRM.models.contract_model import Contract
+from EpicEventsCRM.models.event_model import Event
 from sqlalchemy.exc import IntegrityError
 from auth import get_current_user
 from db.database import get_db
@@ -58,10 +61,12 @@ def _prompt_for_employee_data(employee: Optional[Employee] = None) -> dict:
         except ValueError as e:
             console.print(Panel(f"[bold red]{e}[/bold red]", box=box.ROUNDED))
 
+    default_department_name = getattr(
+        employee, 'department', DepartmentEnum.COMMERCIAL).name
     department_name = Prompt.ask(
         "[bold yellow]Department[/bold yellow]",
         choices=[d.name for d in DepartmentEnum],
-        default=getattr(employee, 'department', DepartmentEnum.COMMERCIAL).name,
+        default=default_department_name,
     ).upper()
     data["department"] = DepartmentEnum[department_name]
 
@@ -90,6 +95,60 @@ def _commit_to_db(db, instance, success_message):
             Panel(f"[bold red]An unexpected error occurred: {e}[/bold red]", box=box.ROUNDED))
         sentry_sdk.capture_exception(e)
         return False
+
+
+def _check_employee_dependencies(db, employee_id: int) -> Optional[str]:
+    """
+    Checks if an employee is assigned to any active records.
+    Returns an error message string if dependencies are found, otherwise None.
+    """
+    dependencies = {
+        "Clients": db.query(Client).filter_by(sales_contact_id=employee_id).first(),
+        "Contracts": db.query(Contract).filter_by(sales_contact_id=employee_id).first(),
+        "Events": db.query(Event).filter_by(support_contact_id=employee_id).first(),
+    }
+
+    active_dependencies = [name for name, found in dependencies.items() if found]
+
+    if active_dependencies:
+        error_msg = (
+            "[bold red]Cannot delete this employee.[/bold red]\n"
+            "They are still assigned to active records. Please reassign the following first:\n"
+        )
+        error_msg += "\n".join(f"- {name}" for name in active_dependencies)
+        return error_msg
+    return None
+
+
+def _confirm_and_execute_deletion(db, employee_to_delete: Employee, current_user: Employee):
+    """
+    Asks for user confirmation and performs the deletion if confirmed.
+    """
+    emp_name = f"{employee_to_delete.first_name} {employee_to_delete.last_name}"
+    confirmation = Prompt.ask(
+        (
+            f"[bold yellow]Are you sure you want to delete {emp_name} "
+            f"(ID: {employee_to_delete.employee_id})? This action is irreversible.[/bold yellow]"
+        ),
+        choices=["yes", "no"],
+        default="no"
+    )
+
+    if confirmation.lower() == "yes":
+        db.delete(employee_to_delete)
+        db.commit()
+        console.print(Panel(
+            f"[bold green]Employee {emp_name} has been successfully deleted.[/bold green]", box=box.ROUNDED))
+        sentry_sdk.capture_message(
+            (
+                f"Employee '{emp_name}' (ID: {employee_to_delete.employee_id}) "
+                f"deleted by {current_user.email}"
+            ),
+            level="info"
+        )
+    else:
+        console.print(
+            Panel("[bold cyan]Deletion cancelled.[/bold cyan]", box=box.ROUNDED))
 
 
 # --- Public API Functions (Simple and Clean) ---
@@ -171,5 +230,48 @@ def update_employee(employee_id: int):
         _commit_to_db(db, employee_to_update,
                       f"Employee '{employee_to_update.first_name}' updated successfully!")
 
+    finally:
+        db.close()
+
+
+def delete_employee(employee_id: int):
+    """
+    Deletes an employee after performing several safety checks.
+    """
+    current_user = get_current_user()
+    if not current_user or not has_permission(current_user, "delete_employee"):
+        console.print(Panel(
+            "[bold red]You do not have permission to delete employees.[/bold red]", box=box.ROUNDED))
+        return
+
+    if getattr(current_user, "employee_id", None) == employee_id:
+        console.print(
+            Panel("[bold red]Error: You cannot delete your own account.[/bold red]", box=box.ROUNDED))
+        return
+
+    db = next(get_db())
+    try:
+        employee_to_delete = db.query(Employee).filter_by(
+            employee_id=employee_id).first()
+        if not employee_to_delete:
+            console.print(
+                Panel(f"[bold red]Employee with ID {employee_id} not found.[/bold red]", box=box.ROUNDED))
+            return
+
+        # Check for dependencies using the helper function
+        dependency_error = _check_employee_dependencies(db, employee_id)
+        if dependency_error:
+            console.print(Panel(dependency_error, box=box.ROUNDED,
+                          title="[bold red]Deletion Blocked[/bold red]"))
+            return
+
+        # Confirm and execute the deletion using the helper function
+        _confirm_and_execute_deletion(db, employee_to_delete, current_user)
+
+    except Exception as e:
+        db.rollback()
+        console.print(
+            Panel(f"[bold red]An unexpected error occurred: {e}[/bold red]", box=box.ROUNDED))
+        sentry_sdk.capture_exception(e)
     finally:
         db.close()

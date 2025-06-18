@@ -4,7 +4,7 @@ import click
 from rich.console import Console
 from auth import login as auth_login, logout as auth_logout, status as auth_status
 from services.list_services import list_clients, list_contracts, list_events, list_employees
-from services.employee_service import create_employee, update_employee
+from services.employee_service import create_employee, update_employee, delete_employee
 from services.contract_service import create_contract, update_contract
 from services.client_service import create_client, update_client
 from services.event_service import create_event, update_event
@@ -105,6 +105,13 @@ def create_employee_command():
 def update_employee_command(employee_id):
     """Update an existing employee."""
     update_employee(employee_id)
+
+
+@cli.command(name="delete-employee")
+@click.argument("employee_id", type=int)
+def delete_employee_command(employee_id):
+    """Delete an existing employee."""
+    delete_employee(employee_id)
 
 
 @cli.command(name="list-employees")
