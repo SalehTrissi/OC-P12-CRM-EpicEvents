@@ -1,10 +1,12 @@
 from EpicEventsCRM.utils.permissions import get_available_commands
 from auth import get_current_user
 from rich.console import Console
+from rich.prompt import Prompt
 from rich.table import Table
 from rich.panel import Panel
 from rich import box
-
+import click
+import sys
 
 console = Console()
 
@@ -33,13 +35,13 @@ def _get_commands_for_user(employee=None):
     """Retrieves the appropriate command dictionary based on the user."""
     if employee:
         return dict(get_available_commands(employee))
-    else:
-        # Commands for non-logged-in users
-        return {
-            "menu": "Display the main menu again.",
-            "login": "Log in to the system.",
-            "help": "Display help for commands.",
-        }
+
+    # Commands for non-logged-in users
+    return {
+        "menu": "Display the main menu again.",
+        "login": "Log in to the system.",
+        "help": "Display help for commands.",
+    }
 
 
 def _build_and_display_table(commands_dict: dict):
@@ -64,40 +66,75 @@ def _build_and_display_table(commands_dict: dict):
     console.print(table)
 
 
-def _get_user_choice(commands_keys: list):
-    """Asks the user for their choice and validates it in a loop."""
+def _get_user_choice(commands_keys: list) -> tuple:
+    """
+    Asks the user for their choice and validates it in a loop.
+    Returns a tuple of (command_string, list_of_arguments).
+    """
     while True:
         try:
             choice_str = console.input(
                 "\n[bold cyan]🎯 Select a command by number (or 0 to exit): [/bold cyan]"
             )
             choice = int(choice_str)
-            if 0 <= choice <= len(commands_keys):
-                return None if choice == 0 else commands_keys[choice - 1]
+
+            if choice == 0:
+                console.print("[bold red]👋 Exiting CRM... Goodbye![/bold red]")
+                sys.exit(0)
+
+            if 1 <= choice <= len(commands_keys):
+                command_string = commands_keys[choice - 1]
+                parts = command_string.split(" ")
+                base_command = parts[0]
+                execution_args = [base_command]
+
+                if len(parts) > 1:
+                    for arg_placeholder in parts[1:]:
+                        prompt_text = arg_placeholder.replace(
+                            '<', '').replace('>', '').replace('_', ' ').title()
+                        user_input = Prompt.ask(
+                            f"[bold yellow]Please enter {prompt_text}[/bold yellow]")
+                        execution_args.append(user_input)
+
+                return base_command, execution_args
             else:
                 console.print(
-                    "[bold red]❌ Number out of range. Please try again.[/bold red]"
-                )
+                    "[bold red]❌ Number out of range. Please try again.[/bold red]")
         except (ValueError, IndexError):
             console.print(
-                "[bold red]❌ Invalid input. Please enter a valid number.[/bold red]"
-            )
+                "[bold red]❌ Invalid input. Please enter a valid number.[/bold red]")
 
 
-def display_menu():
+def run_menu_loop(cli_runner: click.Group):
     """
-    Affiche un menu propre et formaté en orchestrant des fonctions d'aide.
+    This is the main public function that runs the interactive menu loop.
+    It orchestrates the display, command retrieval, and execution.
     """
-    # 1. Get the user and display the appropriate welcome panel
-    employee = get_current_user()
-    _display_welcome_panel(employee)
+    while True:
+        # 1. Get user and display welcome panel
+        employee = get_current_user()
+        _display_welcome_panel(employee)
 
-    # 2. Get the relevant commands for the user
-    commands_dict = _get_commands_for_user(employee)
+        # 2. Get and display the table of available commands
+        commands_dict = _get_commands_for_user(employee)
+        _build_and_display_table(commands_dict)
 
-    # 3. Build and display the command table
-    _build_and_display_table(commands_dict)
+        # 3. Get user's command choice and any required arguments
+        base_command, execution_args = _get_user_choice(list(commands_dict.keys()))
 
-    # 4. Get and validate the user's choice
-    commands_keys = list(commands_dict.keys())
-    return _get_user_choice(commands_keys)
+        # 4. Execute the command
+        if base_command == "menu":
+            continue
+
+        try:
+            cli_runner.main(args=execution_args, standalone_mode=False)
+            if base_command not in ["logout", "exit"]:
+                console.input(
+                    "\n[bold cyan]Press ENTER to return to the menu...[/bold cyan]")
+        except SystemExit:
+            console.input(
+                "\n[bold cyan]Press ENTER to return to the menu...[/bold cyan]")
+        except Exception as e:
+            console.print(f"[bold red]An error occurred: {str(e)}[/bold red]")
+            console.input(
+                "\n[bold cyan]Press ENTER to return to the menu...[/bold cyan]")
