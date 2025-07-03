@@ -46,13 +46,19 @@ def list_clients_command():
 
 
 @cli.command(name="list-contracts")
-def list_contracts_command():
-    list_contracts()
+@click.option('--not-signed', is_flag=True, help="Display unsigned contracts.")
+@click.option('--not-paid', is_flag=True, help="Display contracts that are not fully paid.")
+def list_contracts_command(not_signed, not_paid):
+    """Lists contracts with optional filters."""
+    list_contracts(not_signed=not_signed, not_paid=not_paid)
 
 
 @cli.command(name="list-events")
-def list_events_command():
-    list_events()
+@click.option('--no-support', is_flag=True, help="Display events with no support contact assigned.")
+@click.option('--my-events', is_flag=True, help="Display only your assigned events (for Support staff).")
+def list_events_command(no_support, my_events):
+    """Lists events with optional filters."""
+    list_events(no_support=no_support, my_events=my_events)
 
 
 @cli.command(name="list-employees")

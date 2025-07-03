@@ -159,15 +159,16 @@ def list_clients():
     _display_table("Client List", get_all_clients, CLIENT_COLUMNS, _format_client_row)
 
 
-def list_contracts():
+def list_contracts(not_signed: bool = False, not_paid: bool = False):
     """Lists all contracts by calling the generic display table function."""
-    _display_table("Contract List", get_all_contracts,
+    _display_table("Contract List", lambda: get_all_contracts(not_signed=not_signed, not_paid=not_paid),
                    CONTRACT_COLUMNS, _format_contract_row)
 
 
-def list_events():
+def list_events(no_support: bool = False, my_events: bool = False):
     """Lists all events by calling the generic display table function."""
-    _display_table("Event List", get_all_events, EVENT_COLUMNS, _format_event_row)
+    _display_table("Event List", lambda: get_all_events(no_support=no_support, my_events=my_events),
+                   EVENT_COLUMNS, _format_event_row)
 
 
 def list_employees():

@@ -56,13 +56,19 @@ def get_all_clients():
 
 
 @require_permission("list_contracts")
-def get_all_contracts():
-    """Retrieves all contracts from the database with related client and contact."""
+def get_all_contracts(not_signed: bool = False, not_paid: bool = False):
+    """Retrieves all contracts from the database, with optional filters."""
     db = next(get_db())
     try:
-        return db.query(Contract).options(
+        query = db.query(Contract).options(
             joinedload(Contract.client), joinedload(Contract.sales_contact)
-        ).all()
+        )
+        if not_signed:
+            query = query.filter(Contract.is_signed.is_(False))
+        if not_paid:
+            query = query.filter(Contract.remaining_amount > 0)
+
+        return query.order_by(Contract.contract_id).all()
     except Exception as e:
         sentry_sdk.capture_exception(e)
         raise RuntimeError(f"Database error while retrieving contracts: {e}")
@@ -71,13 +77,25 @@ def get_all_contracts():
 
 
 @require_permission("list_events")
-def get_all_events():
-    """Retrievels all events from the database with related client and contact."""
+def get_all_events(no_support: bool = False, my_events: bool = False):
+    """Retrieves all events from the database, with optional filters."""
     db = next(get_db())
     try:
-        return db.query(Event).options(
+        query = db.query(Event).options(
             joinedload(Event.client), joinedload(Event.support_contact)
-        ).all()
+        )
+
+        if no_support:
+            query = query.filter(Event.support_contact_id.is_(None))
+
+        if my_events:
+            current_user = get_current_user()
+            if not current_user:
+                raise PermissionError("Authentication required to view your events.")
+            query = query.filter(Event.support_contact_id == current_user.employee_id)
+
+        return query.order_by(Event.event_start_date).all()
+
     except Exception as e:
         sentry_sdk.capture_exception(e)
         raise RuntimeError(f"Database error while retrieving events: {e}")
