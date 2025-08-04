@@ -104,7 +104,7 @@ def create_contract():
         remaining_amount=remaining_amount,
         is_signed=is_signed,
         client=client,
-        sales_contact=current_user,
+        sales_contact=client.sales_contact,
     )
 
     # Save to database
@@ -146,7 +146,7 @@ def update_contract(contract_id):
         )
         return
 
-    if not has_permission(current_user, "modify_contract"):
+    if not has_permission(current_user, "update_contract"):
         console.print(
             Panel("[bold red]Insufficient permissions.[/bold red]", box=box.ROUNDED)
         )
