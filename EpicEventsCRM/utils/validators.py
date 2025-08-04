@@ -20,7 +20,6 @@ def validate_string_length(value, field_name, max_length):
 def validate_phone_number(number):
     if len(number) > 20:
         raise ValueError("Le numéro de téléphone est trop long")
-    # Ajoutez une validation du format si nécessaire
     return number
 
 
